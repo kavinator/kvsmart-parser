@@ -69,7 +69,7 @@ OPTIONS:
 
 	-lp, --log-path='/path/path'
 		write output in log-directory
-		$0 --drives='/dev/hda' --log-path='/var/log/$0'
+		$0 --drives='/dev/hda' --log-path='/var/log/kvsmart-parser'
 
 	-d, --debug
 		use debug mode
