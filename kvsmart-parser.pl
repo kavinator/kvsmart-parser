@@ -122,7 +122,7 @@ print "Output format: $FORMAT\n" if $DEBUG;
 sub drives_check {
 	my @drives = split( /,\s*/, join ( ',', @_ ) ) if @_;
 	my @rigth_drives = ();
-	foreach ( @drives ) {
+	for ( @drives ) {
 		if ( m#^\s*(/dev/.+)\s*$# and -e $1 ) {
 			print "\"$1\" exist\n" if $DEBUG;
 			push @rigth_drives, $1;
@@ -183,7 +183,7 @@ sub vendor_check {
 		return @_;
 	} else {
 		my @right_drives = ();
-		foreach my $drive ( @_ ) {
+		for my $drive ( @_ ) {
 			$drive =~ m%/dev/(\w+)%;
 			my $model_path = "/sys/block/$1/device/model";
 			if ( -r "$model_path" ) {
@@ -221,7 +221,7 @@ sub run_smart {
 	my @smart_result = `$cmd`;
 	my $found_start_tag;
 	my $errmsg = "";
-	foreach ( @smart_result ) {
+	for ( @smart_result ) {
 		chomp;
 		if ( /^ID#\s+ATTRIBUTE_NAME\s+FLAG/ ) {
 			$found_start_tag = 1;
@@ -260,7 +260,7 @@ sub run_smart {
 		exit;
 	}
 	my %smart_data;
-	foreach ( @smart_result ) {
+	for ( @smart_result ) {
 		if ( /^\s*((?:\d{1,3}|ID#)\s+.*)\s*$/ ) {
 			chomp;
 			my @data = split /\s+/, $1;
@@ -307,16 +307,16 @@ sub run_smart {
 	return %smart_data;
 }
 
-foreach my $drive ( @DRIVES ) {
+for my $drive ( @DRIVES ) {
 	print "use $drive\n" if $DEBUG;
 	my %drive_smart = &run_smart( $drive );
 	if ( %drive_smart ) {
 		$drive =~ m%/dev/(\w+)%;
 		my @smart_log = ();
-		foreach my $attr ( sort keys %drive_smart ) {
+		for my $attr ( sort keys %drive_smart ) {
 			my %attr_data = %{ $drive_smart{ $attr } };
 			my @smart_attr = ( $drive, $attr );
-			foreach ( sort keys %attr_data ) {
+			for ( sort keys %attr_data ) {
 				push @smart_attr, $attr_data{ $_ };
 			}
 			push @smart_log, join( $SEP_OUTPUT,  @smart_attr ) . "\n";
