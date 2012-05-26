@@ -261,7 +261,7 @@ sub run_smart {
 	}
 	my %smart_data;
 	foreach ( @smart_result ) {
-		if ( /^\s*(\d{1,3}\s+.*)\s*$/ or /^\s*(ID#\s+.*)\s*$/ ) {
+		if ( /^\s*((?:\d{1,3}|ID#)\s+.*)\s*$/ ) {
 			chomp;
 			my @data = split /\s+/, $1;
 			my @selected_columns = ();
