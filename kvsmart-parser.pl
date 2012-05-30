@@ -107,7 +107,9 @@ unless ( -x $SMARTCTL ) {
     exit;
 }
 
-@DRIVES = &vendor_check( &drives_check( @DRIVES ) );
+@DRIVES = &vendor_check(
+	[ &drives_check( [ @DRIVES ] ) ]
+);
 
 @VENDORS = split( /,\s*/, join ( ',', @VENDORS ) ) if @VENDORS;
 print "Detected vendors: " . join( ', ', @VENDORS ) . "\n" if $DEBUG;
@@ -120,9 +122,12 @@ print "Output format: $FORMAT\n" if $DEBUG;
 
 # drives_check( @drives )
 sub drives_check {
-	my @drives = split( /,\s*/, join ( ',', @_ ) ) if @_;
+	my $drives = shift;
+	unless ( $drives ) {
+		return ();
+	}
 	my @rigth_drives = ();
-	for ( @drives ) {
+	for ( split( /,\s*/, join ( ',', @$drives ) ) ) {
 		if ( m#^\s*(/dev/.+)\s*$# and -e $1 ) {
 			print "\"$1\" exist\n" if $DEBUG;
 			push @rigth_drives, $1;
@@ -155,6 +160,7 @@ sub file_read {
 # log_write( $file_name, @array )
 sub log_write {
 	my $file_name = shift;
+	my $log_data = shift;
 	my $path = ( $file_name =~ /^(.*\/).*$/ ) ? $1 : './';
 	mkpath( $path, { error => \my $errmsg } );
 	if ( @$errmsg ) {
@@ -173,17 +179,18 @@ sub log_write {
 	}
 	print "write log to \"$file_name\"\n" if $DEBUG;
 	open( OUT, '>>', $file_name ) or die &error_print( "Can't write file: $!" );
-		print OUT map { $_ } @_;
+		print OUT map { $_ } @$log_data;
 	close OUT;
 }
 
 # vendor_check( @drives )
 sub vendor_check {
+	my $drives = shift;
 	unless ( @VENDORS ) {
-		return @_;
+		return @$drives ;
 	} else {
 		my @right_drives = ();
-		for my $drive ( @_ ) {
+		for my $drive ( @$drives ) {
 			$drive =~ m%/dev/(\w+)%;
 			my $model_path = "/sys/block/$1/device/model";
 			if ( -r "$model_path" ) {
@@ -218,10 +225,10 @@ sub run_smart {
 	my $drive = shift;
 	my $cmd = "$SMARTCTL --attributes $drive --format=$FORMAT";
 	print "run smartctl for $drive\n" if $DEBUG;
-	my @smart_result = `$cmd`;
+	my $smart_result = [ `$cmd` ];
 	my $found_start_tag;
 	my $errmsg = "";
-	for ( @smart_result ) {
+	for ( @$smart_result ) {
 		chomp;
 		if ( /^ID#\s+ATTRIBUTE_NAME\s+FLAG/ ) {
 			$found_start_tag = 1;
@@ -260,7 +267,7 @@ sub run_smart {
 		exit;
 	}
 	my %smart_data;
-	for ( @smart_result ) {
+	for ( @$smart_result ) {
 		if ( /^\s*((?:\d{1,3}|ID#)\s+.*)\s*$/ ) {
 			chomp;
 			my @data = split /\s+/, $1;
@@ -322,7 +329,7 @@ for my $drive ( @DRIVES ) {
 			push @smart_log, join( $SEP_OUTPUT,  @smart_attr ) . "\n";
 		}
 		if ( $LOG_PATH ) {
-			&log_write( "$LOG_PATH/$1.log", @smart_log );
+			&log_write( "$LOG_PATH/$1.log", [ @smart_log ] );
 		} else {
 			print @smart_log;
 		}
