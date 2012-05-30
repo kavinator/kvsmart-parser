@@ -21,7 +21,7 @@ use warnings;
 use File::Path;
 use Getopt::Long;
 
-my $VERSION  = '0.4.1';
+my $VERSION  = '0.4.2';
 my $SMARTCTL = '/usr/sbin/smartctl';
 my $FORMAT   = 'old'; # old | brief
 my $SEP_OUTPUT = "\t";
