@@ -231,6 +231,7 @@ sub vendor_check {
 # )
 #
 # run_smart( $drive_name )
+# @return: ref to hash
 sub run_smart {
 	my $drive = shift;
 	my $cmd = "$SMARTCTL --attributes $drive --format=$FORMAT";
@@ -322,13 +323,13 @@ sub run_smart {
 			}
 		}
 	}
-	return %smart_data;
+	return \%smart_data;
 }
 
 for my $drive ( @DRIVES ) {
 	print "use $drive\n"
 		if $DEBUG;
-	my $drive_smart = { &run_smart( $drive ) };
+	my $drive_smart = &run_smart( $drive );
 	if ( %$drive_smart ) {
 		$drive =~ m{/dev/(\w+)};
 		my @smart_log = ();
