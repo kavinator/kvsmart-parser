@@ -111,14 +111,17 @@ unless ( -x $SMARTCTL ) {
 	[ &drives_check( [ @DRIVES ] ) ]
 );
 
-@VENDORS = split( /,\s*/, join ( ',', @VENDORS ) ) if @VENDORS;
-print "Detected vendors: " . join( ', ', @VENDORS ) . "\n" if $DEBUG;
+@VENDORS = split( /,\s*/, join ( ',', @VENDORS ) )
+	if @VENDORS;
+print "Detected vendors: " . join( ', ', @VENDORS ) . "\n"
+	if $DEBUG;
 
 unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' ) {
 	&error_print( "invalid smart output format: $FORMAT" );
 	exit;
 }
-print "Output format: $FORMAT\n" if $DEBUG;
+print "Output format: $FORMAT\n"
+	if $DEBUG;
 
 # drives_check( @drives )
 sub drives_check {
@@ -129,13 +132,15 @@ sub drives_check {
 	my @rigth_drives = ();
 	for ( split( /,\s*/, join ( ',', @$drives ) ) ) {
 		if ( m#^\s*(/dev/.+)\s*$# and -e $1 ) {
-			print "\"$1\" exist\n" if $DEBUG;
+			print "\"$1\" exist\n"
+				if $DEBUG;
 			push @rigth_drives, $1;
 		} else {
 			&error_print( "drive \"$1\" not exist", "warning" );
 		}
 	}
-	print "Detected drives: " . join( ', ', @rigth_drives ) . "\n" if $DEBUG;
+	print "Detected drives: " . join( ', ', @rigth_drives ) . "\n"
+		if $DEBUG;
 	return @rigth_drives;
 }
 
@@ -143,7 +148,8 @@ sub drives_check {
 sub error_print {
 	my $msg = shift;
 	my $type = shift || 'error';
-	$type =~ s/(.*)/\U$1/g if $type;
+	$type =~ s/(.*)/\U$1/g
+		if $type;
 	print "\n$type: $msg\n\n";
 }
 
@@ -174,10 +180,12 @@ sub log_write {
 		}
 	}
 	if ( -e $file_name ) {
-		print "file \"$file_name\" exist, replaced\n" if $DEBUG;
+		print "file \"$file_name\" exist, replaced\n"
+			if $DEBUG;
 		unlink $file_name;
 	}
-	print "write log to \"$file_name\"\n" if $DEBUG;
+	print "write log to \"$file_name\"\n"
+		if $DEBUG;
 	open( OUT, '>>', $file_name ) or die &error_print( "Can't write file: $!" );
 		print OUT map { $_ } @$log_data;
 	close OUT;
@@ -195,8 +203,10 @@ sub vendor_check {
 			my $model_path = "/sys/block/$1/device/model";
 			if ( -r "$model_path" ) {
 				my $vendor = ( split /\s+/, ( &file_read( $model_path ) )[0] )[0];
-				print "drive \"$drive\" vendor \"$vendor\"\n" if $DEBUG;
-				push @right_drives, $drive if $vendor ~~ @VENDORS;
+				print "drive \"$drive\" vendor \"$vendor\"\n"
+					if $DEBUG;
+				push @right_drives, $drive
+					if $vendor ~~ @VENDORS;
 			}
 		}
 		return @right_drives;
@@ -224,7 +234,8 @@ sub vendor_check {
 sub run_smart {
 	my $drive = shift;
 	my $cmd = "$SMARTCTL --attributes $drive --format=$FORMAT";
-	print "run smartctl for $drive\n" if $DEBUG;
+	print "run smartctl for $drive\n"
+		if $DEBUG;
 	my $smart_result = [ `$cmd` ];
 	my $found_start_tag;
 	my $errmsg = "";
@@ -273,13 +284,14 @@ sub run_smart {
 			my @data = split /\s+/, $1;
 			my @selected_columns = ();
 			if ( $FORMAT eq 'old' ) {
+				@selected_columns = ( 0 .. 5, 8, 9 );
 				# Example of smartctl output for ATA-drive (old-format)
 				# ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
 				#   9 Power_On_Hours          0x0032   096   096   000    Old_age   Always       -       3404
 				#  12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       408
 				# 194 Temperature_Celsius     0x0022   116   097   000    Old_age   Always       -       31
-				@selected_columns = ( 0 .. 5, 8, 9 );
 			} else {
+				@selected_columns = ( 0 .. 7 );
 				# Example of smartctl output for ATA-drive (brief-format)
 				# ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 				#   9 Power_On_Hours          -O--CK   099   099   000    -    1078
@@ -291,7 +303,6 @@ sub run_smart {
 				#                             |||____ S speed/performance
 				#                             ||_____ O updated online
 				#                             |______ P prefailure warning
-				@selected_columns = ( 0 .. 7 );
 			}
 			my ( $id, $attr_name, $flag, $value, $worst, $thresh, $fail, $raw_value ) = @data[ @selected_columns ];
 			unless ( $attr_name ~~ %smart_data ) {
@@ -315,7 +326,8 @@ sub run_smart {
 }
 
 for my $drive ( @DRIVES ) {
-	print "use $drive\n" if $DEBUG;
+	print "use $drive\n"
+		if $DEBUG;
 	my %drive_smart = &run_smart( $drive );
 	if ( %drive_smart ) {
 		$drive =~ m%/dev/(\w+)%;
@@ -326,7 +338,7 @@ for my $drive ( @DRIVES ) {
 			for ( sort keys %attr_data ) {
 				push @smart_attr, $attr_data{ $_ };
 			}
-			push @smart_log, join( $SEP_OUTPUT,  @smart_attr ) . "\n";
+			push @smart_log, join( $SEP_OUTPUT, @smart_attr ) . "\n";
 		}
 		if ( $LOG_PATH ) {
 			&log_write( "$LOG_PATH/$1.log", [ @smart_log ] );
