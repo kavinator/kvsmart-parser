@@ -130,7 +130,7 @@ sub drives_check {
 		return ();
 	}
 	my @rigth_drives = ();
-	for ( split( /,\s*/, join ( ',', @$drives ) ) ) {
+	for ( grep{ defined } split( /[,\ ]\s*/, join ( ',', @$drives ) ) ) {
 		if ( m{^\s*(/dev/.+)\s*$} and -e $1 ) {
 			print "\"$1\" exist\n"
 				if $DEBUG;
