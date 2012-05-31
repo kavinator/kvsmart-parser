@@ -280,45 +280,59 @@ sub run_smart {
 	}
 	my %smart_data;
 	for ( @$smart_result ) {
-		if ( /^\s*((?:\d{1,3}|ID#)\s+.*)\s*$/ ) {
+		if ( /^\s*(?:\d{1,3}|ID#)\s+.*$/ ) {
 			chomp;
-			my @data = split /\s+/, $1;
-			my @selected_columns = ();
-			if ( $FORMAT eq 'old' ) {
-				@selected_columns = ( 0 .. 5, 8, 9 );
-				# Example of smartctl output for ATA-drive (old-format)
-				# ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
-				#   9 Power_On_Hours          0x0032   096   096   000    Old_age   Always       -       3404
-				#  12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       408
-				# 194 Temperature_Celsius     0x0022   116   097   000    Old_age   Always       -       31
-			} else {
-				@selected_columns = ( 0 .. 7 );
-				# Example of smartctl output for ATA-drive (brief-format)
-				# ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
-				#   9 Power_On_Hours          -O--CK   099   099   000    -    1078
-				#  12 Power_Cycle_Count       -O--CK   100   100   000    -    497
-				# 194 Temperature_Celsius     -O---K   117   105   000    -    33
-				#                             ||||||_ K auto-keep
-				#                             |||||__ C event count
-				#                             ||||___ R error rate
-				#                             |||____ S speed/performance
-				#                             ||_____ O updated online
-				#                             |______ P prefailure warning
-			}
-			my ( $id, $attr_name, $flag, $value, $worst, $thresh, $fail, $raw_value ) = @data[ @selected_columns ];
-			unless ( $attr_name ~~ %smart_data ) {
-				$smart_data{ $attr_name } = {
-					id => $id,
-					flag => $flag,
-					value => $value,
-					worst => $worst,
-					thresh => $thresh,
-					fail => $fail,
-					raw_value => $raw_value,
+
+			# Example of smartctl output for ATA-drive (old-format)
+			# ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+			#   9 Power_On_Hours          0x0032   096   096   000    Old_age   Always       -       3404
+			#  12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       408
+			# 194 Temperature_Celsius     0x0022   116   097   000    Old_age   Always       -       31
+			#
+			# Example of smartctl output for ATA-drive (brief-format)
+			# ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
+			#   9 Power_On_Hours          -O--CK   099   099   000    -    1078
+			#  12 Power_Cycle_Count       -O--CK   100   100   000    -    497
+			# 194 Temperature_Celsius     -O---K   117   105   000    -    33
+			#                             ||||||_ K auto-keep
+			#                             |||||__ C event count
+			#                             ||||___ R error rate
+			#                             |||____ S speed/performance
+			#                             ||_____ O updated online
+			#                             |______ P prefailure warning
+
+			m(
+				^\s*
+				(?<id>\d{1,3}|ID\#)\s+            # number or 'ID#'
+				(?<attr_name>[\w\-]+)\s+          # wo-rd
+				(?<flag>[\w\-]+)\s+               # wo-rd  or 'FLAG' or 'FLAGS'
+				(?<value>\d+|VALUE)\s+            # number or 'VALUE'
+				(?<worst>\d+|WORST)\s+            # number or 'WORST'
+				(?<thresh>\d+|THRESH)\s+          # number or 'THRESH'
+				(?<old_format>
+					(?<type>[\w\-]+)\s+           # wo-rd  or 'TYPE'
+					(?<updated>\w+)\s+            # word   or 'UPDATED'
+				)?
+				(?<fail>[\w\-]+)\s+               # wo-rd  or 'WHEN_FAILED' or 'FAIL'
+				(?<raw_value>\d+|RAW_VALUE)       # number or 'RAW_VALUE'
+				\s*$
+			)x;
+
+			unless ( $+{ attr_name } ~~ %smart_data ) {
+				$smart_data{ $+{ attr_name } } = {
+					id        => $+{ id },
+					flag      => $+{ flag },
+					value     => $+{ value },
+					worst     => $+{ worst },
+					thresh    => $+{ thresh },
+					fail      => $+{ fail },
+					raw_value => $+{ raw_value },
 				};
-				if ( $FORMAT eq 'old' ) {
-					$smart_data{ $attr_name}{ type } = $data[6];
-					$smart_data{ $attr_name}{ updated } = $data[7];
+				if ( $+{ old_format } ) {
+					$smart_data{ $+{ attr_name } }{ type } = $+{ type }
+						if $+{ type };
+					$smart_data{ $+{ attr_name } }{ updated } = $+{ updated }
+						if $+{ updated };
 				}
 			}
 		}
