@@ -131,7 +131,7 @@ sub drives_check {
 	}
 	my @rigth_drives = ();
 	for ( split( /,\s*/, join ( ',', @$drives ) ) ) {
-		if ( m#^\s*(/dev/.+)\s*$# and -e $1 ) {
+		if ( m{^\s*(/dev/.+)\s*$} and -e $1 ) {
 			print "\"$1\" exist\n"
 				if $DEBUG;
 			push @rigth_drives, $1;
@@ -199,7 +199,7 @@ sub vendor_check {
 	} else {
 		my @right_drives = ();
 		for my $drive ( @$drives ) {
-			$drive =~ m%/dev/(\w+)%;
+			$drive =~ m{/dev/(\w+)};
 			my $model_path = "/sys/block/$1/device/model";
 			if ( -r "$model_path" ) {
 				my $vendor = ( split /\s+/, ( &file_read( $model_path ) )[0] )[0];
@@ -330,7 +330,7 @@ for my $drive ( @DRIVES ) {
 		if $DEBUG;
 	my %drive_smart = &run_smart( $drive );
 	if ( %drive_smart ) {
-		$drive =~ m%/dev/(\w+)%;
+		$drive =~ m{/dev/(\w+)};
 		my @smart_log = ();
 		for my $attr ( sort keys %drive_smart ) {
 			my %attr_data = %{ $drive_smart{ $attr } };
