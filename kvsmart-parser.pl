@@ -328,17 +328,16 @@ sub run_smart {
 for my $drive ( @DRIVES ) {
 	print "use $drive\n"
 		if $DEBUG;
-	my %drive_smart = &run_smart( $drive );
-	if ( %drive_smart ) {
+	my $drive_smart = { &run_smart( $drive ) };
+	if ( %$drive_smart ) {
 		$drive =~ m{/dev/(\w+)};
 		my @smart_log = ();
-		for my $attr ( sort keys %drive_smart ) {
-			my %attr_data = %{ $drive_smart{ $attr } };
-			my @smart_attr = ( $drive, $attr );
-			for ( sort keys %attr_data ) {
-				push @smart_attr, $attr_data{ $_ };
-			}
-			push @smart_log, join( $SEP_OUTPUT, @smart_attr ) . "\n";
+		for my $attr ( sort keys %$drive_smart ) {
+			my %attr_data = %{ $drive_smart->{ $attr } };
+			# order of smart-data colums
+			my $columns = [ qw( id flag value worst thresh type updated fail raw_value ) ];
+			my $datas = [ grep { defined } @attr_data{ @$columns } ];
+			push @smart_log, join( $SEP_OUTPUT, $drive, @$datas ) . "\n";
 		}
 		if ( $LOG_PATH ) {
 			&log_write( "$LOG_PATH/$1.log", [ @smart_log ] );
