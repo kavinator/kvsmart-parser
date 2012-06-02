@@ -21,16 +21,16 @@ use warnings;
 use File::Path;
 use Getopt::Long;
 
-my $VERSION  = '0.4.3';
-my $SMARTCTL = '/usr/sbin/smartctl';
-my $FORMAT   = 'old'; # old | brief
+my $VERSION    = '0.4.3';
+my $SMARTCTL   = '/usr/sbin/smartctl';
+my $FORMAT     = 'old'; # old | brief
 my $SEP_OUTPUT = "\t";
-my $LOG_PATH = '';
-my $VER      = 0;
-my $HELP     = 0;
-my $DEBUG    = 0;
-my @DRIVES   = ();
-my @VENDORS  = ();
+my $LOG_PATH   = '';
+my $VER        = 0;
+my $HELP       = 0;
+my $DEBUG      = 0;
+my @DRIVES     = ();
+my @VENDORS    = ();
 
 GetOptions(
 	'drives|drv=s{,}'  => \@DRIVES,
