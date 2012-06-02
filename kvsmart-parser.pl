@@ -150,7 +150,10 @@ sub drives_check {
 				if $DEBUG;
 			push @rigth_drives, $1;
 		} else {
-			&error_print( "drive \"$1\" not exist", "warning" );
+			&error_print(
+				"drive \"$1\" not exist",
+				"warning"
+			);
 		}
 	}
 	print "Detected drives: " . join( ', ', @rigth_drives ) . "\n"
