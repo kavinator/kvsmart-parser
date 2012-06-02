@@ -167,6 +167,11 @@ sub vendor_check {
 	unless ( @VENDORS ) {
 		return @$drives ;
 	} else {
+		@VENDORS = split( /,\s*/, join ( ',', @VENDORS ) )
+			if @VENDORS;
+		print "Detected vendors: " . join( ', ', @VENDORS ) . "\n"
+			if $DEBUG;
+
 		my @right_drives = ();
 		for my $drive ( @$drives ) {
 			$drive =~ m{/dev/(\w+)};
@@ -344,11 +349,6 @@ print "Output format: $FORMAT\n"
 @DRIVES = &vendor_check(
 	[ &drives_check( [ @DRIVES ] ) ]
 );
-
-@VENDORS = split( /,\s*/, join ( ',', @VENDORS ) )
-	if @VENDORS;
-print "Detected vendors: " . join( ', ', @VENDORS ) . "\n"
-	if $DEBUG;
 
 for my $drive ( @DRIVES ) {
 	print "use $drive\n"
