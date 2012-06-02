@@ -90,27 +90,6 @@ either version 3 of the License, or (at your option) any later version.
 ";
 }
 
-# drives_check( @drives )
-sub drives_check {
-	my $drives = shift;
-	unless ( $drives ) {
-		return ();
-	}
-	my @rigth_drives = ();
-	for ( grep{ defined } split( /[,\ ]\s*/, join ( ',', @$drives ) ) ) {
-		if ( m{^\s*(/dev/.+)\s*?$} and -e $1 ) {
-			print "\"$1\" exist\n"
-				if $DEBUG;
-			push @rigth_drives, $1;
-		} else {
-			&error_print( "drive \"$1\" not exist", "warning" );
-		}
-	}
-	print "Detected drives: " . join( ', ', @rigth_drives ) . "\n"
-		if $DEBUG;
-	return @rigth_drives;
-}
-
 # error_print( $error_message, $error_type )
 sub error_print {
 	my $msg = shift;
@@ -156,6 +135,27 @@ sub log_write {
 	open( OUT, '>>', $file_name ) or die &error_print( "Can't write file: $!" );
 		print OUT map { $_ } @$log_data;
 	close OUT;
+}
+
+# drives_check( @drives )
+sub drives_check {
+	my $drives = shift;
+	unless ( $drives ) {
+		return ();
+	}
+	my @rigth_drives = ();
+	for ( grep{ defined } split( /[,\ ]\s*/, join ( ',', @$drives ) ) ) {
+		if ( m{^\s*(/dev/.+)\s*?$} and -e $1 ) {
+			print "\"$1\" exist\n"
+				if $DEBUG;
+			push @rigth_drives, $1;
+		} else {
+			&error_print( "drive \"$1\" not exist", "warning" );
+		}
+	}
+	print "Detected drives: " . join( ', ', @rigth_drives ) . "\n"
+		if $DEBUG;
+	return @rigth_drives;
 }
 
 # vendor_check( @drives )
