@@ -167,7 +167,7 @@ sub vendor_check {
 	unless ( @VENDORS ) {
 		return @$drives ;
 	} else {
-		@VENDORS = split( /,\s*/, join ( ',', @VENDORS ) )
+		@VENDORS = split( /[,\ ]\s*/, join ( ',', @VENDORS ) )
 			if @VENDORS;
 		print "Detected vendors: " . join( ', ', @VENDORS ) . "\n"
 			if $DEBUG;
