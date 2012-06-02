@@ -90,39 +90,6 @@ either version 3 of the License, or (at your option) any later version.
 ";
 }
 
-if ( $HELP ) {
-	&print_usage();
-	exit;
-} elsif ( $VER ) {
-	print "kvsmart-parser $VERSION Copyright (c) 2012 Vladimir Petukhov (kavinator\@gmail.com)\n";
-	exit;
-}
-
-if ( $ENV{ USER } ne 'root' ) {
-	&error_print( 'root privileges are required to detect vendor or run smartctl!', 'warning' );
-}
-
-unless ( -x $SMARTCTL ) {
-    print "\nERROR: cannot find smartctl\n\n";
-    exit;
-}
-
-@DRIVES = &vendor_check(
-	[ &drives_check( [ @DRIVES ] ) ]
-);
-
-@VENDORS = split( /,\s*/, join ( ',', @VENDORS ) )
-	if @VENDORS;
-print "Detected vendors: " . join( ', ', @VENDORS ) . "\n"
-	if $DEBUG;
-
-unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' ) {
-	&error_print( "invalid smart output format: $FORMAT" );
-	exit;
-}
-print "Output format: $FORMAT\n"
-	if $DEBUG;
-
 # drives_check( @drives )
 sub drives_check {
 	my $drives = shift;
@@ -339,6 +306,45 @@ sub run_smart {
 	}
 	return \%smart_data;
 }
+
+########################################################################
+
+if ( $HELP ) {
+	&print_usage();
+	exit;
+} elsif ( $VER ) {
+	print "kvsmart-parser $VERSION Copyright (c) 2012 Vladimir Petukhov (kavinator\@gmail.com)\n";
+	exit;
+}
+
+if ( $ENV{ USER } ne 'root' ) {
+	&error_print(
+		'root privileges are required to detect vendor or run smartctl!',
+		'warning'
+	);
+}
+
+unless ( -x $SMARTCTL ) {
+    print "\nERROR: cannot find smartctl\n\n";
+    exit;
+}
+
+unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' ) {
+	&error_print( "invalid smart output format: $FORMAT" );
+	exit;
+}
+
+print "Output format: $FORMAT\n"
+	if $DEBUG;
+
+@DRIVES = &vendor_check(
+	[ &drives_check( [ @DRIVES ] ) ]
+);
+
+@VENDORS = split( /,\s*/, join ( ',', @VENDORS ) )
+	if @VENDORS;
+print "Detected vendors: " . join( ', ', @VENDORS ) . "\n"
+	if $DEBUG;
 
 for my $drive ( @DRIVES ) {
 	print "use $drive\n"
