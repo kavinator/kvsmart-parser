@@ -131,7 +131,7 @@ sub drives_check {
 	}
 	my @rigth_drives = ();
 	for ( grep{ defined } split( /[,\ ]\s*/, join ( ',', @$drives ) ) ) {
-		if ( m{^\s*(/dev/.+)\s*$} and -e $1 ) {
+		if ( m{^\s*(/dev/.+)\s*?$} and -e $1 ) {
 			print "\"$1\" exist\n"
 				if $DEBUG;
 			push @rigth_drives, $1;
@@ -167,7 +167,7 @@ sub file_read {
 sub log_write {
 	my $file_name = shift;
 	my $log_data = shift;
-	my $path = ( $file_name =~ /^(.*\/).*$/ ) ? $1 : './';
+	my $path = ( $file_name =~ /^(.*\/).*?$/ ) ? $1 : './';
 	mkpath( $path, { error => \my $errmsg } );
 	if ( @$errmsg ) {
 		for my $diag ( @$errmsg ) {
@@ -280,7 +280,7 @@ sub run_smart {
 	}
 	my %smart_data;
 	for ( @$smart_result ) {
-		if ( /^\s*(?:\d{1,3}|ID#)\s+.*$/ ) {
+		if ( /^\s*(?:\d{1,3}|ID#)\s+.*?$/ ) {
 			chomp;
 
 			# Example of smartctl output for ATA-drive (old-format)
@@ -302,7 +302,7 @@ sub run_smart {
 			#                             |______ P prefailure warning
 
 			m(
-				^\s*
+				^\s*?
 				(?<id>\d{1,3}|ID\#)\s+            # number or 'ID#'
 				(?<attr_name>[\w\-]+)\s+          # wo-rd
 				(?<flag>[\w\-]+)\s+               # wo-rd  or 'FLAG' or 'FLAGS'
