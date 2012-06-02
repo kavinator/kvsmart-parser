@@ -21,7 +21,7 @@ use warnings;
 use File::Path;
 use Getopt::Long;
 
-my $VERSION    = '0.4.4';
+my $VERSION    = '0.4.5';
 my $SMARTCTL   = '/usr/sbin/smartctl';
 my $FORMAT     = 'old'; # old | brief
 my $SEP_OUTPUT = "\t";
@@ -369,7 +369,7 @@ for my $drive ( @DRIVES ) {
 			# order of smart-data colums
 			my $columns = [ qw( id flag value worst thresh type updated fail raw_value ) ];
 			my $datas = [ grep { defined } @attr_data{ @$columns } ];
-			push @smart_log, join( $SEP_OUTPUT, $drive, @$datas ) . "\n";
+			push @smart_log, join( $SEP_OUTPUT, $drive, $attr, @$datas ) . "\n";
 		}
 		if ( $LOG_PATH ) {
 			&log_write( "$LOG_PATH/$1.log", [ @smart_log ] );
