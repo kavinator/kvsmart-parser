@@ -21,7 +21,7 @@ use warnings;
 use File::Path;
 use Getopt::Long;
 
-my $VERSION    = '0.4.5';
+my $VERSION    = '0.5';
 my $SMARTCTL   = '/usr/sbin/smartctl';
 my $FORMAT     = 'old'; # old | brief
 my $SEP_OUTPUT = "\t";
@@ -31,16 +31,18 @@ my $HELP       = 0;
 my $DEBUG      = 0;
 my @DRIVES     = ();
 my @VENDORS    = ();
+my @ATTRIBUTES = ();
 
 GetOptions(
-	'drives|drv=s{,}'  => \@DRIVES,
-	'vendors|ven=s{,}' => \@VENDORS,
-	'format|f=s'       => \$FORMAT,
-	'sep-output|so=s'  => \$SEP_OUTPUT,
-	'log-path|lp=s'    => \$LOG_PATH,
-	'debug|d'          => \$DEBUG,
-	'version|v'        => \$VER,
-	'help|h'           => \$HELP,
+	'drives|drv=s{,}'    => \@DRIVES,
+	'vendors|ven=s{,}'   => \@VENDORS,
+	'smart-attr|sa=s{,}' => \@ATTRIBUTES,
+	'format|f=s'         => \$FORMAT,
+	'sep-output|so=s'    => \$SEP_OUTPUT,
+	'log-path|lp=s'      => \$LOG_PATH,
+	'debug|d'            => \$DEBUG,
+	'version|v'          => \$VER,
+	'help|h'             => \$HELP,
 ) or die "Incorrect usage!\n";
 
 sub print_usage() {
@@ -55,6 +57,10 @@ OPTIONS:
 	-ven, --vendors='vendor1 [, vendor2 [...] ]'
 		$0 --drives='/dev/hda' --vendors='VENDER'
 		$0 --drives='/dev/hda' --vendors='VENDER0, VENDER1'
+
+	-sa, --smart-attr='attr1 [, attr2 [...] ]'
+		$0 --drives='/dev/hda' --smart-attr='Spin_Up_Time'
+		$0 --drives='/dev/hda' --smart-attr='Spin_Up_Time, Temperature_Celsius'
 
 	-f, --format='FORMAT'
 		set output format for attributes to one of: old, brief
@@ -135,7 +141,7 @@ sub log_write {
 		if $DEBUG;
 	open( OUT, '>>', $file_name )
 		or die &error_print( "Can't write file: $!" );
-		print OUT map { $_ } @$log_data;
+		print OUT map{ $_ } @$log_data;
 	close OUT;
 }
 
@@ -151,7 +157,6 @@ sub drives_check {
 		return ();
 	}
 	my @rigth_drives = ();
-
 	for ( &split_name( @$drives ) ) {
 		if ( m{^\s*(/dev/.+)\s*?$} and -e $1 ) {
 			print "\"$1\" exist\n"
@@ -172,14 +177,13 @@ sub drives_check {
 # vendor_check( @drives )
 sub vendor_check {
 	my $drives = shift;
-	unless ( @VENDORS ) {
-		return @$drives ;
+	my $vendors = shift;
+	unless ( @$vendors ) {
+		return @$drives;
 	} else {
-		@VENDORS = &split_name( @VENDORS )
-			if @VENDORS;
-		print "Detected vendors: " . join( ', ', @VENDORS ) . "\n"
+		@$vendors = &split_name( @$vendors );
+		print "Detected vendors: " . join( ', ', @$vendors ) . "\n"
 			if $DEBUG;
-
 		my @right_drives = ();
 		for my $drive ( @$drives ) {
 			$drive =~ m{/dev/(\w+)};
@@ -189,11 +193,22 @@ sub vendor_check {
 				print "drive \"$drive\" vendor \"$vendor\"\n"
 					if $DEBUG;
 				push @right_drives, $drive
-					if $vendor ~~ @VENDORS;
+					if $vendor ~~ @$vendors;
 			}
 		}
 		return @right_drives;
 	}
+}
+
+# smart_attr_check( @attributes )
+sub smart_attr_check {
+	my $attributes = shift;
+	if ( @$attributes ) {
+		$attributes = [ &split_name( @$attributes ) ];
+		print "Detected SMART attributes: " . join( ', ', @$attributes ) . "\n"
+			if $DEBUG;
+	}
+	return @$attributes;
 }
 
 # smart_data => (
@@ -354,8 +369,12 @@ print "Output format: $FORMAT\n"
 	if $DEBUG;
 
 @DRIVES = &vendor_check(
-	[ &drives_check( [ @DRIVES ] ) ]
+	[ &drives_check( \@DRIVES ) ],
+	\@VENDORS
 );
+
+@ATTRIBUTES = &smart_attr_check( \@ATTRIBUTES )
+	if @ATTRIBUTES;
 
 for my $drive ( @DRIVES ) {
 	print "use $drive\n"
@@ -364,15 +383,20 @@ for my $drive ( @DRIVES ) {
 	if ( %$drive_smart ) {
 		$drive =~ m{/dev/(\w+)};
 		my @smart_log = ();
-		for my $attr ( sort keys %$drive_smart ) {
+		my $attributes = [ keys %$drive_smart ];
+		if ( @ATTRIBUTES ) {
+			@$attributes = grep{ $_ if $_ ~~ @ATTRIBUTES } @$attributes;
+			push @$attributes, 'ATTRIBUTE_NAME';
+		}
+		for my $attr ( sort @$attributes ) {
 			my %attr_data = %{ $drive_smart->{ $attr } };
 			# order of smart-data colums
 			my $columns = [ qw( id flag value worst thresh type updated fail raw_value ) ];
-			my $datas = [ grep { defined } @attr_data{ @$columns } ];
-			push @smart_log, join( $SEP_OUTPUT, $drive, $attr, @$datas ) . "\n";
+			my $values = [ grep{ defined } @attr_data{ @$columns } ];
+			push @smart_log, join( $SEP_OUTPUT, $drive, $attr, @$values ) . "\n";
 		}
 		if ( $LOG_PATH ) {
-			&log_write( "$LOG_PATH/$1.log", [ @smart_log ] );
+			&log_write( "$LOG_PATH/$1.log", \@smart_log );
 		} else {
 			print @smart_log;
 		}
