@@ -325,6 +325,7 @@ if ( $ENV{ USER } ne 'root' ) {
 		'root privileges are required to detect vendor or run smartctl!',
 		'warning'
 	);
+	exit;
 }
 
 unless ( -x $SMARTCTL ) {
