@@ -96,7 +96,7 @@ sub error_print {
 	my $type = shift || 'error';
 	$type =~ s/(.*)/\U$1/g
 		if $type;
-	print "\n$type: $msg\n\n";
+	print "$type: $msg\n";
 }
 
 # file_read( $file_name )
