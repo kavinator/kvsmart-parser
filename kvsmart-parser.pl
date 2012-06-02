@@ -137,6 +137,11 @@ sub log_write {
 	close OUT;
 }
 
+# split_name( @names )
+sub split_name {
+	return grep{ $_ if defined } split( /[,\ ]\s*/, join ( ',', @_ ) )
+}
+
 # drives_check( @drives )
 sub drives_check {
 	my $drives = shift;
@@ -144,7 +149,8 @@ sub drives_check {
 		return ();
 	}
 	my @rigth_drives = ();
-	for ( grep{ defined } split( /[,\ ]\s*/, join ( ',', @$drives ) ) ) {
+
+	for ( &split_name( @$drives ) ) {
 		if ( m{^\s*(/dev/.+)\s*?$} and -e $1 ) {
 			print "\"$1\" exist\n"
 				if $DEBUG;
@@ -167,7 +173,7 @@ sub vendor_check {
 	unless ( @VENDORS ) {
 		return @$drives ;
 	} else {
-		@VENDORS = split( /[,\ ]\s*/, join ( ',', @VENDORS ) )
+		@VENDORS = &split_name( @VENDORS )
 			if @VENDORS;
 		print "Detected vendors: " . join( ', ', @VENDORS ) . "\n"
 			if $DEBUG;
