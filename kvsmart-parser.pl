@@ -139,7 +139,7 @@ sub log_write {
 
 # split_name( @names )
 sub split_name {
-	return grep{ $_ if defined } split( /[,\ ]\s*/, join ( ',', @_ ) )
+	return grep{ $_ if defined } split( /[,\ ]\s*/, join( ',', @_ ) )
 }
 
 # drives_check( @drives )
