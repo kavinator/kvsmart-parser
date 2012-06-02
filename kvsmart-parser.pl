@@ -157,7 +157,6 @@ sub drives_check {
 		return ();
 	}
 	my @rigth_drives = ();
-
 	for ( &split_name( @$drives ) ) {
 		if ( m{^\s*(/dev/.+)\s*?$} and -e $1 ) {
 			print "\"$1\" exist\n"
@@ -178,14 +177,13 @@ sub drives_check {
 # vendor_check( @drives )
 sub vendor_check {
 	my $drives = shift;
-	unless ( @VENDORS ) {
-		return @$drives ;
+	my $vendors = shift;
+	unless ( @$vendors ) {
+		return @$drives;
 	} else {
-		@VENDORS = &split_name( @VENDORS )
-			if @VENDORS;
-		print "Detected vendors: " . join( ', ', @VENDORS ) . "\n"
+		@$vendors = &split_name( @$vendors );
+		print "Detected vendors: " . join( ', ', @$vendors ) . "\n"
 			if $DEBUG;
-
 		my @right_drives = ();
 		for my $drive ( @$drives ) {
 			$drive =~ m{/dev/(\w+)};
@@ -195,7 +193,7 @@ sub vendor_check {
 				print "drive \"$drive\" vendor \"$vendor\"\n"
 					if $DEBUG;
 				push @right_drives, $drive
-					if $vendor ~~ @VENDORS;
+					if $vendor ~~ @$vendors;
 			}
 		}
 		return @right_drives;
@@ -371,10 +369,11 @@ print "Output format: $FORMAT\n"
 	if $DEBUG;
 
 @DRIVES = &vendor_check(
-	[ &drives_check( [ @DRIVES ] ) ]
+	[ &drives_check( \@DRIVES ) ],
+	\@VENDORS
 );
 
-@ATTRIBUTES = &smart_attr_check( [ @ATTRIBUTES ] )
+@ATTRIBUTES = &smart_attr_check( \@ATTRIBUTES )
 	if @ATTRIBUTES;
 
 for my $drive ( @DRIVES ) {
@@ -397,7 +396,7 @@ for my $drive ( @DRIVES ) {
 			push @smart_log, join( $SEP_OUTPUT, $drive, $attr, @$values ) . "\n";
 		}
 		if ( $LOG_PATH ) {
-			&log_write( "$LOG_PATH/$1.log", [ @smart_log ] );
+			&log_write( "$LOG_PATH/$1.log", \@smart_log );
 		} else {
 			print @smart_log;
 		}
