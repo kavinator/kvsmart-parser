@@ -21,16 +21,16 @@ use warnings;
 use File::Path;
 use Getopt::Long;
 
-my $VERSION  = '0.4.3';
-my $SMARTCTL = '/usr/sbin/smartctl';
-my $FORMAT   = 'old'; # old | brief
+my $VERSION    = '0.4.4';
+my $SMARTCTL   = '/usr/sbin/smartctl';
+my $FORMAT     = 'old'; # old | brief
 my $SEP_OUTPUT = "\t";
-my $LOG_PATH = '';
-my $VER      = 0;
-my $HELP     = 0;
-my $DEBUG    = 0;
-my @DRIVES   = ();
-my @VENDORS  = ();
+my $LOG_PATH   = '';
+my $VER        = 0;
+my $HELP       = 0;
+my $DEBUG      = 0;
+my @DRIVES     = ();
+my @VENDORS    = ();
 
 GetOptions(
 	'drives|drv=s{,}'  => \@DRIVES,
@@ -90,74 +90,21 @@ either version 3 of the License, or (at your option) any later version.
 ";
 }
 
-if ( $HELP ) {
-	&print_usage();
-	exit;
-} elsif ( $VER ) {
-	print "kvsmart-parser $VERSION Copyright (c) 2012 Vladimir Petukhov (kavinator\@gmail.com)\n";
-	exit;
-}
-
-if ( $ENV{ USER } ne 'root' ) {
-	&error_print( 'root privileges are required to detect vendor or run smartctl!', 'warning' );
-}
-
-unless ( -x $SMARTCTL ) {
-    print "\nERROR: cannot find smartctl\n\n";
-    exit;
-}
-
-@DRIVES = &vendor_check(
-	[ &drives_check( [ @DRIVES ] ) ]
-);
-
-@VENDORS = split( /,\s*/, join ( ',', @VENDORS ) )
-	if @VENDORS;
-print "Detected vendors: " . join( ', ', @VENDORS ) . "\n"
-	if $DEBUG;
-
-unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' ) {
-	&error_print( "invalid smart output format: $FORMAT" );
-	exit;
-}
-print "Output format: $FORMAT\n"
-	if $DEBUG;
-
-# drives_check( @drives )
-sub drives_check {
-	my $drives = shift;
-	unless ( $drives ) {
-		return ();
-	}
-	my @rigth_drives = ();
-	for ( grep{ defined } split( /[,\ ]\s*/, join ( ',', @$drives ) ) ) {
-		if ( m{^\s*(/dev/.+)\s*$} and -e $1 ) {
-			print "\"$1\" exist\n"
-				if $DEBUG;
-			push @rigth_drives, $1;
-		} else {
-			&error_print( "drive \"$1\" not exist", "warning" );
-		}
-	}
-	print "Detected drives: " . join( ', ', @rigth_drives ) . "\n"
-		if $DEBUG;
-	return @rigth_drives;
-}
-
 # error_print( $error_message, $error_type )
 sub error_print {
 	my $msg = shift;
 	my $type = shift || 'error';
 	$type =~ s/(.*)/\U$1/g
 		if $type;
-	print "\n$type: $msg\n\n";
+	print "$type: $msg\n";
 }
 
 # file_read( $file_name )
 sub file_read {
 	my $file_name = shift;
 	my @output_array;
-	open IN, '<', $file_name or die &error_print( "Can't open file: $!" );
+	open IN, '<', $file_name
+		or die &error_print( "Can't open file: $!" );
 		@output_array = <IN>;
 	close IN;
 	return @output_array;
@@ -167,7 +114,7 @@ sub file_read {
 sub log_write {
 	my $file_name = shift;
 	my $log_data = shift;
-	my $path = ( $file_name =~ /^(.*\/).*$/ ) ? $1 : './';
+	my $path = ( $file_name =~ /^(.*\/).*?$/ ) ? $1 : './';
 	mkpath( $path, { error => \my $errmsg } );
 	if ( @$errmsg ) {
 		for my $diag ( @$errmsg ) {
@@ -186,9 +133,40 @@ sub log_write {
 	}
 	print "write log to \"$file_name\"\n"
 		if $DEBUG;
-	open( OUT, '>>', $file_name ) or die &error_print( "Can't write file: $!" );
+	open( OUT, '>>', $file_name )
+		or die &error_print( "Can't write file: $!" );
 		print OUT map { $_ } @$log_data;
 	close OUT;
+}
+
+# split_name( @names )
+sub split_name {
+	return grep{ $_ if defined } split( /[,\ ]\s*/, join( ',', @_ ) )
+}
+
+# drives_check( @drives )
+sub drives_check {
+	my $drives = shift;
+	unless ( $drives ) {
+		return ();
+	}
+	my @rigth_drives = ();
+
+	for ( &split_name( @$drives ) ) {
+		if ( m{^\s*(/dev/.+)\s*?$} and -e $1 ) {
+			print "\"$1\" exist\n"
+				if $DEBUG;
+			push @rigth_drives, $1;
+		} else {
+			&error_print(
+				"drive \"$1\" not exist",
+				"warning"
+			);
+		}
+	}
+	print "Detected drives: " . join( ', ', @rigth_drives ) . "\n"
+		if $DEBUG;
+	return @rigth_drives;
 }
 
 # vendor_check( @drives )
@@ -197,6 +175,11 @@ sub vendor_check {
 	unless ( @VENDORS ) {
 		return @$drives ;
 	} else {
+		@VENDORS = &split_name( @VENDORS )
+			if @VENDORS;
+		print "Detected vendors: " . join( ', ', @VENDORS ) . "\n"
+			if $DEBUG;
+
 		my @right_drives = ();
 		for my $drive ( @$drives ) {
 			$drive =~ m{/dev/(\w+)};
@@ -280,7 +263,7 @@ sub run_smart {
 	}
 	my %smart_data;
 	for ( @$smart_result ) {
-		if ( /^\s*(?:\d{1,3}|ID#)\s+.*$/ ) {
+		if ( /^\s*(?:\d{1,3}|ID#)\s+.*?$/ ) {
 			chomp;
 
 			# Example of smartctl output for ATA-drive (old-format)
@@ -302,7 +285,7 @@ sub run_smart {
 			#                             |______ P prefailure warning
 
 			m(
-				^\s*
+				^\s*?
 				(?<id>\d{1,3}|ID\#)\s+            # number or 'ID#'
 				(?<attr_name>[\w\-]+)\s+          # wo-rd
 				(?<flag>[\w\-]+)\s+               # wo-rd  or 'FLAG' or 'FLAGS'
@@ -339,6 +322,40 @@ sub run_smart {
 	}
 	return \%smart_data;
 }
+
+########################################################################
+
+if ( $HELP ) {
+	&print_usage();
+	exit;
+} elsif ( $VER ) {
+	print "kvsmart-parser $VERSION Copyright (c) 2012 Vladimir Petukhov (kavinator\@gmail.com)\n";
+	exit;
+}
+
+if ( $ENV{ USER } ne 'root' ) {
+	&error_print(
+		'root privileges are required to detect vendor or run smartctl!',
+		'warning'
+	);
+}
+
+unless ( -x $SMARTCTL ) {
+    print "\nERROR: cannot find smartctl\n\n";
+    exit;
+}
+
+unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' ) {
+	&error_print( "invalid smart output format: $FORMAT" );
+	exit;
+}
+
+print "Output format: $FORMAT\n"
+	if $DEBUG;
+
+@DRIVES = &vendor_check(
+	[ &drives_check( [ @DRIVES ] ) ]
+);
 
 for my $drive ( @DRIVES ) {
 	print "use $drive\n"
