@@ -145,8 +145,8 @@ sub log_write {
 	close OUT;
 }
 
-# split_name( @names )
-sub split_name {
+# split_names( @names )
+sub split_names {
 	return grep{ $_ if defined } split( /[,\ ]\s*/, join( ',', @_ ) )
 }
 
@@ -157,7 +157,7 @@ sub drives_check {
 		return ();
 	}
 	my @rigth_drives = ();
-	for ( &split_name( @$drives ) ) {
+	for ( &split_names( @$drives ) ) {
 		if ( m{^\s*(/dev/.+)\s*?$} and -e $1 ) {
 			print "\"$1\" exist\n"
 				if $DEBUG;
@@ -181,7 +181,7 @@ sub vendor_check {
 	unless ( @$vendors ) {
 		return @$drives;
 	} else {
-		@$vendors = &split_name( @$vendors );
+		@$vendors = &split_names( @$vendors );
 		print "Detected vendors: " . join( ', ', @$vendors ) . "\n"
 			if $DEBUG;
 		my @right_drives = ();
@@ -204,7 +204,7 @@ sub vendor_check {
 sub smart_attr_check {
 	my $attributes = shift;
 	if ( @$attributes ) {
-		$attributes = [ &split_name( @$attributes ) ];
+		$attributes = [ &split_names( @$attributes ) ];
 		print "Detected SMART attributes: " . join( ', ', @$attributes ) . "\n"
 			if $DEBUG;
 	}
