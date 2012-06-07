@@ -105,6 +105,10 @@ sub error_print {
 	print "$type: $msg\n";
 }
 
+sub debug_print {
+	print "$_[0]\n" if $DEBUG;
+}
+
 # file_read( $file_name )
 sub file_read {
 	my $file_name = shift;
@@ -133,12 +137,10 @@ sub log_write {
 		}
 	}
 	if ( -e $file_name ) {
-		print "file \"$file_name\" exist, replaced\n"
-			if $DEBUG;
+		&debug_print( "file \"$file_name\" exist, replaced" );
 		unlink $file_name;
 	}
-	print "write log to \"$file_name\"\n"
-		if $DEBUG;
+		&debug_print( "write log to \"$file_name\"");
 	open( OUT, '>>', $file_name )
 		or die &error_print( "Can't write file: $!" );
 		print OUT map{ $_ } @$log_data;
@@ -159,8 +161,7 @@ sub drives_check {
 	my @rigth_drives = ();
 	for ( &split_names( @$drives ) ) {
 		if ( m{^\s*(/dev/.+)\s*?$} and -e $1 ) {
-			print "\"$1\" exist\n"
-				if $DEBUG;
+			&debug_print( "\"$1\" exist" );
 			push @rigth_drives, $1;
 		} else {
 			&error_print(
@@ -169,8 +170,7 @@ sub drives_check {
 			);
 		}
 	}
-	print "Detected drives: " . join( ', ', @rigth_drives ) . "\n"
-		if $DEBUG;
+	&debug_print( "Detected drives: " . join( ', ', @rigth_drives ) );
 	return @rigth_drives;
 }
 
@@ -182,16 +182,14 @@ sub vendor_check {
 		return @$drives;
 	} else {
 		@$vendors = &split_names( @$vendors );
-		print "Detected vendors: " . join( ', ', @$vendors ) . "\n"
-			if $DEBUG;
+		&debug_print( "Detected vendors: " . join( ', ', @$vendors ) );
 		my @right_drives = ();
 		for my $drive ( @$drives ) {
 			$drive =~ m{/dev/(\w+)};
 			my $model_path = "/sys/block/$1/device/model";
 			if ( -r "$model_path" ) {
 				my $vendor = ( split /\s+/, ( &file_read( $model_path ) )[0] )[0];
-				print "drive \"$drive\" vendor \"$vendor\"\n"
-					if $DEBUG;
+				&debug_print( "drive \"$drive\" vendor \"$vendor\"" );
 				push @right_drives, $drive
 					if $vendor ~~ @$vendors;
 			}
@@ -205,8 +203,7 @@ sub smart_attr_check {
 	my $attributes = shift;
 	if ( @$attributes ) {
 		$attributes = [ &split_names( @$attributes ) ];
-		print "Detected SMART attributes: " . join( ', ', @$attributes ) . "\n"
-			if $DEBUG;
+		&debug_print( "Detected SMART attributes: " . join( ', ', @$attributes ) );
 	}
 	return @$attributes;
 }
@@ -233,8 +230,7 @@ sub smart_attr_check {
 sub run_smart {
 	my $drive = shift;
 	my $cmd = "$SMARTCTL --attributes $drive --format=$FORMAT";
-	print "run smartctl for $drive\n"
-		if $DEBUG;
+	&debug_print( "run smartctl for $drive" );
 	my $smart_result = [ `$cmd` ];
 	my $found_start_tag;
 	my $errmsg = "";
@@ -365,8 +361,7 @@ unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' ) {
 	exit;
 }
 
-print "Output format: $FORMAT\n"
-	if $DEBUG;
+&debug_print( "Output format: $FORMAT" );
 
 @DRIVES = &vendor_check(
 	[ &drives_check( \@DRIVES ) ],
@@ -377,8 +372,7 @@ print "Output format: $FORMAT\n"
 	if @ATTRIBUTES;
 
 for my $drive ( @DRIVES ) {
-	print "use $drive\n"
-		if $DEBUG;
+	&debug_print( "use $drive" );
 	my $drive_smart = &run_smart( $drive );
 	if ( %$drive_smart ) {
 		$drive =~ m{/dev/(\w+)};
