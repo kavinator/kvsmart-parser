@@ -112,10 +112,10 @@ sub debug_print {
 sub file_read {
 	my $file_name = shift;
 	my @output_array;
-	open IN, '<', $file_name
+	open my $IN, '<', $file_name
 		or die &error_print( "Can't open file: $!" );
-		@output_array = <IN>;
-	close IN;
+		@output_array = <$IN>;
+	close $IN;
 	return @output_array;
 }
 
@@ -140,10 +140,10 @@ sub log_write {
 		unlink $file_name;
 	}
 		&debug_print( "write log to \"$file_name\"");
-	open( OUT, '>>', $file_name )
+	open( my $OUT, '>>', $file_name )
 		or die &error_print( "Can't write file: $!" );
-		print OUT map{ $_ } @$log_data;
-	close OUT;
+		print $OUT map{ $_ } @$log_data;
+	close $OUT;
 }
 
 # split_names( @names )
