@@ -100,8 +100,7 @@ either version 3 of the License, or (at your option) any later version.
 sub error_print {
 	my $msg = shift;
 	my $type = shift || 'error';
-	$type =~ s/(.*)/\U$1/g
-		if $type;
+	$type =~ s/(.*)/\U$1/g;
 	print "$type: $msg\n";
 }
 
