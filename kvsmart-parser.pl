@@ -140,7 +140,7 @@ sub log_write {
 		unlink $file_name;
 	}
 		&debug_print( "write log to \"$file_name\"");
-	open( my $OUT, '>>', $file_name )
+	open my $OUT, '>>', $file_name
 		or die &error_print( "Can't write file: $!" );
 		print $OUT map{ $_ } @$log_data;
 	close $OUT;
