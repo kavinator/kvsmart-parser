@@ -152,16 +152,17 @@ sub split_names {
 }
 
 # drives_check( @drives )
+# @return ref to array
 sub drives_check {
 	my $drives = shift;
 	unless ( $drives ) {
-		return ();
+		return [];
 	}
-	my @rigth_drives = ();
+	my $rigth_drives = [];
 	for ( &split_names( @$drives ) ) {
 		if ( m{^\s*(/dev/.+)\s*?$} and -e $1 ) {
 			&debug_print( "\"$1\" exist" );
-			push @rigth_drives, $1;
+			push @$rigth_drives, $1;
 		} else {
 			&error_print(
 				"drive \"$1\" not exist",
@@ -169,8 +170,8 @@ sub drives_check {
 			);
 		}
 	}
-	&debug_print( "Detected drives: " . join( ', ', @rigth_drives ) );
-	return @rigth_drives;
+	&debug_print( "Detected drives: " . join( ', ', @$rigth_drives ) );
+	return $rigth_drives;
 }
 
 # vendor_check( @drives )
@@ -365,7 +366,7 @@ unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' ) {
 &debug_print( "Output format: $FORMAT" );
 
 @DRIVES = &vendor_check(
-	[ &drives_check( \@DRIVES ) ],
+	&drives_check( \@DRIVES ),
 	\@VENDORS
 );
 
