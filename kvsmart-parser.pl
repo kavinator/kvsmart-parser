@@ -109,14 +109,15 @@ sub debug_print {
 }
 
 # file_read( $file_name )
+# @return: ref to array
 sub file_read {
 	my $file_name = shift;
-	my @output_array;
+	my $output_array = [];
 	open my $IN, '<', $file_name
 		or die &error_print( "Can't open file: $!" );
-		@output_array = <$IN>;
+		@$output_array = <$IN>;
 	close $IN;
-	return @output_array;
+	return $output_array;
 }
 
 # log_write( $file_name, @array )
@@ -175,6 +176,7 @@ sub drives_check {
 }
 
 # vendor_check( @drives )
+# @return: ref to array
 sub vendor_check {
 	my $drives = shift;
 	my $vendors = shift;
@@ -188,7 +190,7 @@ sub vendor_check {
 			$drive =~ m{/dev/(\w+)};
 			my $model_path = "/sys/block/$1/device/model";
 			if ( -r "$model_path" ) {
-				my $vendor = ( split /\s+/, ( &file_read( $model_path ) )[0] )[0];
+				my $vendor = ( split /\s+/, @{ &file_read( $model_path ) }[0] )[0];
 				&debug_print( "drive \"$drive\" vendor \"$vendor\"" );
 				push @$right_drives, $drive
 					if $vendor ~~ @$vendors;
