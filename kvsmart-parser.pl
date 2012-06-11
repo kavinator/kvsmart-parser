@@ -183,18 +183,18 @@ sub vendor_check {
 	} else {
 		@$vendors = &split_names( @$vendors );
 		&debug_print( "Detected vendors: " . join( ', ', @$vendors ) );
-		my @right_drives = ();
+		my $right_drives = [];
 		for my $drive ( @$drives ) {
 			$drive =~ m{/dev/(\w+)};
 			my $model_path = "/sys/block/$1/device/model";
 			if ( -r "$model_path" ) {
 				my $vendor = ( split /\s+/, ( &file_read( $model_path ) )[0] )[0];
 				&debug_print( "drive \"$drive\" vendor \"$vendor\"" );
-				push @right_drives, $drive
+				push @$right_drives, $drive
 					if $vendor ~~ @$vendors;
 			}
 		}
-		return @right_drives;
+		return @$right_drives;
 	}
 }
 
