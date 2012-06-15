@@ -112,12 +112,12 @@ sub debug_print {
 # @return: ref to array
 sub file_read {
 	my $file_name = shift;
-	my $output_array = [];
+	my $output = [];
 	open my $IN, '<', $file_name
 		or die &error_print( "Can't open file: $!" );
-		@$output_array = <$IN>;
+		@$output = <$IN>;
 	close $IN;
-	return $output_array;
+	return $output;
 }
 
 # log_write( $file_name, @array )
