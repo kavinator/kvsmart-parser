@@ -98,7 +98,7 @@ either version 3 of the License, or (at your option) any later version.
 
 # error_print( $error_message, $error_type )
 sub error_print {
-	my $msg = shift;
+	my $msg  = shift;
 	my $type = shift || 'error';
 	$type =~ s/(.*)/\U$1/g;
 	print "$type: $msg\n";
@@ -123,7 +123,7 @@ sub file_read {
 # log_write( $file_name, @array )
 sub log_write {
 	my $file_name = shift;
-	my $log_data = shift;
+	my $log_data  = shift;
 	my $path = ( $file_name =~ /^(.*\/).*?$/ ) ? $1 : './';
 	mkpath( $path, { error => \my $errmsg } );
 	if ( @$errmsg ) {
@@ -178,7 +178,7 @@ sub drives_check {
 # vendor_check( @drives )
 # @return: ref to array
 sub vendor_check {
-	my $drives = shift;
+	my $drives  = shift;
 	my $vendors = shift;
 	unless ( @$vendors ) {
 		return @$drives;
@@ -380,7 +380,7 @@ for my $drive ( @DRIVES ) {
 	my $drive_smart = &run_smart( $drive );
 	if ( %$drive_smart ) {
 		$drive =~ m{/dev/(\w+)};
-		my @smart_log = ();
+		my @smart_log  = ();
 		my $attributes = [ keys %$drive_smart ];
 		if ( @ATTRIBUTES ) {
 			@$attributes = grep{ $_ if $_ ~~ @ATTRIBUTES } @$attributes;
@@ -390,7 +390,7 @@ for my $drive ( @DRIVES ) {
 			my %attr_data = %{ $drive_smart->{ $attr } };
 			# order of smart-data colums
 			my $columns = [ qw( id flag value worst thresh type updated fail raw_value ) ];
-			my $values = [ grep{ defined } @attr_data{ @$columns } ];
+			my $values  = [ grep{ defined } @attr_data{ @$columns } ];
 			push @smart_log, join( $SEP_OUTPUT, $drive, $attr, @$values ) . "\n";
 		}
 		if ( $LOG_PATH ) {
