@@ -325,10 +325,10 @@ sub run_smart {
 					raw_value => $+{ raw_value },
 				};
 				if ( $+{ old_format } ) {
-					$smart_data{ $+{ attr_name } }{ type } = $+{ type }
-						if $+{ type };
-					$smart_data{ $+{ attr_name } }{ updated } = $+{ updated }
-						if $+{ updated };
+					for my $section ( qw( type updated ) ) {
+						$smart_data{ $+{ attr_name } }{ $section } = $+{ $section }
+							if $+{ $section };
+					}
 				}
 			}
 		}
