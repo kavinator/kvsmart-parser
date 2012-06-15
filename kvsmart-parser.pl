@@ -340,7 +340,7 @@ sub run_smart {
 # Main part
 ########################################################################
 
-if ( $HELP or $ARGV == 0 ) {
+if ( $HELP or $#ARGV == 0 ) {
 	&print_usage();
 	exit;
 } elsif ( $VER ) {
