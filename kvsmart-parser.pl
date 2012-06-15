@@ -124,8 +124,8 @@ sub file_read {
 sub log_write {
 	my $file_name = shift;
 	my $log_data  = shift;
-	my $path = ( $file_name =~ /^(.*\/).*?$/ ) ? $1 : './';
-	mkpath( $path, { error => \my $errmsg } );
+	my $file_path = ( $file_name =~ /^(.*\/).*?$/ ) ? $1 : './';
+	mkpath( $file_path, { error => \my $errmsg } );
 	if ( @$errmsg ) {
 		for my $diag ( @$errmsg ) {
 			my ( $file, $message ) = %$diag;
