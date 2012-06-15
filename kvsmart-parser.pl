@@ -21,7 +21,7 @@ use warnings;
 use File::Path;
 use Getopt::Long;
 
-my $VERSION    = '0.5.1';
+my $VERSION    = '0.5.2';
 my $SMARTCTL   = '/usr/sbin/smartctl';
 my $FORMAT     = 'old'; # old | brief
 my $SEP_OUTPUT = "\t";
@@ -98,7 +98,7 @@ either version 3 of the License, or (at your option) any later version.
 
 # error_print( $error_message, $error_type )
 sub error_print {
-	my $msg = shift;
+	my $msg  = shift;
 	my $type = shift || 'error';
 	$type =~ s/(.*)/\U$1/g;
 	print "$type: $msg\n";
@@ -112,20 +112,20 @@ sub debug_print {
 # @return: ref to array
 sub file_read {
 	my $file_name = shift;
-	my $output_array = [];
+	my $output = [];
 	open my $IN, '<', $file_name
 		or die &error_print( "Can't open file: $!" );
-		@$output_array = <$IN>;
+		@$output = <$IN>;
 	close $IN;
-	return $output_array;
+	return $output;
 }
 
 # log_write( $file_name, @array )
 sub log_write {
 	my $file_name = shift;
-	my $log_data = shift;
-	my $path = ( $file_name =~ /^(.*\/).*?$/ ) ? $1 : './';
-	mkpath( $path, { error => \my $errmsg } );
+	my $log_data  = shift;
+	my $file_path = ( $file_name =~ /^(.*\/).*?$/ ) ? $1 : './';
+	mkpath( $file_path, { error => \my $errmsg } );
 	if ( @$errmsg ) {
 		for my $diag ( @$errmsg ) {
 			my ( $file, $message ) = %$diag;
@@ -178,7 +178,7 @@ sub drives_check {
 # vendor_check( @drives )
 # @return: ref to array
 sub vendor_check {
-	my $drives = shift;
+	my $drives  = shift;
 	my $vendors = shift;
 	unless ( @$vendors ) {
 		return @$drives;
@@ -325,10 +325,10 @@ sub run_smart {
 					raw_value => $+{ raw_value },
 				};
 				if ( $+{ old_format } ) {
-					$smart_data{ $+{ attr_name } }{ type } = $+{ type }
-						if $+{ type };
-					$smart_data{ $+{ attr_name } }{ updated } = $+{ updated }
-						if $+{ updated };
+					for my $section ( qw( type updated ) ) {
+						$smart_data{ $+{ attr_name } }{ $section } = $+{ $section }
+							if $+{ $section };
+					}
 				}
 			}
 		}
@@ -340,7 +340,7 @@ sub run_smart {
 # Main part
 ########################################################################
 
-if ( $HELP ) {
+if ( $HELP or $#ARGV == 0 ) {
 	&print_usage();
 	exit;
 } elsif ( $VER ) {
@@ -380,7 +380,7 @@ for my $drive ( @DRIVES ) {
 	my $drive_smart = &run_smart( $drive );
 	if ( %$drive_smart ) {
 		$drive =~ m{/dev/(\w+)};
-		my @smart_log = ();
+		my @smart_log  = ();
 		my $attributes = [ keys %$drive_smart ];
 		if ( @ATTRIBUTES ) {
 			@$attributes = grep{ $_ if $_ ~~ @ATTRIBUTES } @$attributes;
@@ -390,7 +390,7 @@ for my $drive ( @DRIVES ) {
 			my %attr_data = %{ $drive_smart->{ $attr } };
 			# order of smart-data colums
 			my $columns = [ qw( id flag value worst thresh type updated fail raw_value ) ];
-			my $values = [ grep{ defined } @attr_data{ @$columns } ];
+			my $values  = [ grep{ defined } @attr_data{ @$columns } ];
 			push @smart_log, join( $SEP_OUTPUT, $drive, $attr, @$values ) . "\n";
 		}
 		if ( $LOG_PATH ) {
