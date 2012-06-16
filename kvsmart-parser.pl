@@ -21,7 +21,7 @@ use warnings;
 use File::Path;
 use Getopt::Long;
 
-my $VERSION    = '0.5.2';
+my $VERSION    = '0.5.3';
 my $SMARTCTL   = '/usr/sbin/smartctl';
 my $FORMAT     = 'old'; # old | brief
 my $SEP_OUTPUT = "\t";
@@ -149,7 +149,7 @@ sub log_write {
 
 # split_names( @names )
 sub split_names {
-	return grep{ $_ if defined } split( /[,\ ]\s*/, join( ',', @_ ) )
+	return grep{ defined } split( /[,\ ]\s*/, join( ',', @_ ) )
 }
 
 # drives_check( @drives )
