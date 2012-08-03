@@ -22,7 +22,7 @@ use 5.010;
 use File::Path;
 use Getopt::Long;
 
-my $VERSION    = '0.5.3';
+my $VERSION    = '0.5.4';
 my $SMARTCTL   = '/usr/sbin/smartctl';
 my $FORMAT     = 'old'; # old | brief
 my $SEP_OUTPUT = "\t";
