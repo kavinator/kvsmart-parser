@@ -98,6 +98,7 @@ and you are welcome to redistribute it under terms and conditions of the
 GNU General Public License as published by the Free Software Foundation;
 either version 3 of the License, or (at your option) any later version.
 ";
+    return;
 }
 
 # error_print( $error_message, $error_type )
@@ -107,12 +108,14 @@ sub error_print
     my $type = shift || 'error';
     $type =~ s/(.*)/\U$1/g;
     print "$type: $msg\n";
+    return;
 }
 
 sub debug_print
 {
     print "$_[0]\n"
         if $DEBUG;
+    return;
 }
 
 # file_read( $file_name )
@@ -165,17 +168,20 @@ sub log_write
         or die &error_print( "Can't write file: $!" );
         print $OUT map{ $_ } @$log_data;
     close $OUT;
+    return;
 }
 
 # split_names( @names )
 sub split_names
 {
-    return
+    my @names =
         grep{ defined }
         split(
             /[,\ ]\s*/,
             join( ',', @_ ),
         );
+
+    return @names;
 }
 
 # drives_check( @drives )
