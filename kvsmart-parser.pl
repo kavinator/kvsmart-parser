@@ -165,7 +165,7 @@ for my $drive ( @DRIVES )
 
 =cut
 
-sub print_usage()
+sub print_usage
 {
     print "$COPYRIGHT
 Usage: $0 [ OPTIONS ] [ VENDORS ] [ LOGPATH ] ... -drv='DRIVES'
