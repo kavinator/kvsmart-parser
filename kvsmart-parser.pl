@@ -65,7 +65,7 @@ elsif ( $VER )
 
 if ( $ENV{ USER } ne 'root' )
 {
-    &error_print(
+    &print_error(
         'root privileges are required to detect vendor or run smartctl!',
         'warning'
     );
@@ -79,7 +79,7 @@ unless ( -x $SMARTCTL )
 
 unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' )
 {
-    &error_print( "invalid smart output format: $FORMAT" );
+    &print_error( "invalid smart output format: $FORMAT" );
     exit;
 }
 
@@ -191,8 +191,8 @@ either version 3 of the License, or (at your option) any later version.
     return;
 }
 
-# error_print( $error_message, $error_type )
-sub error_print
+# print_error( $error_message, $error_type )
+sub print_error
 {
     my $msg  = shift;
     my $type = shift || 'error';
@@ -215,10 +215,10 @@ sub file_read
     my $file_name = shift;
     my $output = [];
     open my $IN, '<', $file_name
-        or die &error_print( "Can't open file: $!" );
+        or die &print_error( "Can't open file: $!" );
         @$output = <$IN>;
     close $IN
-        or die &error_print( "Can't close file: $!" );
+        or die &print_error( "Can't close file: $!" );
     return $output;
 }
 
@@ -241,11 +241,11 @@ sub log_write
             my ( $file, $message ) = %$diag;
             if ( $file eq '' )
             {
-                &error_print( "general error: $message" );
+                &print_error( "general error: $message" );
             }
             else
             {
-                &error_print( "create $file: $message" );
+                &print_error( "create $file: $message" );
             }
         }
     }
@@ -256,10 +256,10 @@ sub log_write
     }
     &debug_print( "write log to \"$file_name\"");
     open my $OUT, '>>', $file_name
-        or die &error_print( "Can't write file: $!" );
+        or die &print_error( "Can't write file: $!" );
         print $OUT map{ $_ } @$log_data;
     close $OUT
-        or die &error_print( "Can't close file: $!" );
+        or die &print_error( "Can't close file: $!" );
     return;
 }
 
@@ -295,7 +295,7 @@ sub drives_check
         }
         else
         {
-            &error_print(
+            &print_error(
                 "drive \"$1\" not exist",
                 "warning"
             );
@@ -420,7 +420,7 @@ sub run_smart
     }
     if ( $errmsg )
     {
-        &error_print( $errmsg );
+        &print_error( $errmsg );
         exit;
     }
     my %smart_data;
