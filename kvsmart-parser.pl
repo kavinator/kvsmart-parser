@@ -31,12 +31,12 @@ use 5.010;
 use File::Path;
 use Getopt::Long;
 
-my $VERSION    = '0.5.4';
+my $VERSION = '0.5.4';
 
-my $SMARTCTL_BIN   = '/usr/sbin/smartctl';
-my $FORMAT     = 'old'; # old | brief
-my $SEP_OUTPUT = "\t";
-my $LOG_PATH   = '';
+my $SMARTCTL_BIN = '/usr/sbin/smartctl';
+my $FORMAT       = 'old'; # old | brief
+my $SEP_OUTPUT   = "\t";
+my $LOG_PATH     = '';
 
 my $VER;
 my $HELP;
