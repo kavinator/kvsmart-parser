@@ -71,12 +71,12 @@ GetOptions(
 if ( $HELP or $#ARGV == 0 )
 {
     print_usage();
-    exit;
+    exit 0;
 }
 elsif ( $VER )
 {
     print "$COPYRIGHT\n";
-    exit;
+    exit 0;
 }
 
 if ( $ENV{ USER } ne 'root' )
@@ -90,13 +90,13 @@ if ( $ENV{ USER } ne 'root' )
 unless ( -x $SMARTCTL )
 {
     print "\nERROR: cannot find smartctl\n\n";
-    exit;
+    exit 0;
 }
 
 unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' )
 {
     print_error( "invalid smart output format: $FORMAT" );
-    exit;
+    exit 0;
 }
 
 print_debug( "Output format: $FORMAT" );
