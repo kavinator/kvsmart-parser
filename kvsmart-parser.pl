@@ -217,7 +217,8 @@ sub file_read
     open my $IN, '<', $file_name
         or die &error_print( "Can't open file: $!" );
         @$output = <$IN>;
-    close $IN;
+    close $IN
+        or die &error_print( "Can't close file: $!" );
     return $output;
 }
 
@@ -257,7 +258,8 @@ sub log_write
     open my $OUT, '>>', $file_name
         or die &error_print( "Can't write file: $!" );
         print $OUT map{ $_ } @$log_data;
-    close $OUT;
+    close $OUT
+        or die &error_print( "Can't close file: $!" );
     return;
 }
 
