@@ -111,7 +111,8 @@ sub error_print
 
 sub debug_print
 {
-    print "$_[0]\n" if $DEBUG;
+    print "$_[0]\n"
+        if $DEBUG;
 }
 
 # file_read( $file_name )
@@ -132,8 +133,13 @@ sub log_write
 {
     my $file_name = shift;
     my $log_data  = shift;
-    my $file_path = ( $file_name =~ /^(.*\/).*?$/ ) ? $1 : './';
-    mkpath( $file_path, { error => \my $errmsg } );
+    my $file_path = ( $file_name =~ /^(.*\/).*?$/ )
+        ? $1
+        : './';
+    mkpath(
+        $file_path,
+        { error => \my $errmsg }
+    );
     if ( @$errmsg )
     {
         for my $diag ( @$errmsg )
@@ -154,7 +160,7 @@ sub log_write
         &debug_print( "file \"$file_name\" exist, replaced" );
         unlink $file_name;
     }
-        &debug_print( "write log to \"$file_name\"");
+    &debug_print( "write log to \"$file_name\"");
     open my $OUT, '>>', $file_name
         or die &error_print( "Can't write file: $!" );
         print $OUT map{ $_ } @$log_data;
@@ -164,7 +170,12 @@ sub log_write
 # split_names( @names )
 sub split_names
 {
-    return grep{ defined } split( /[,\ ]\s*/, join( ',', @_ ) )
+    return
+        grep{ defined }
+        split(
+            /[,\ ]\s*/,
+            join( ',', @_ ),
+        );
 }
 
 # drives_check( @drives )
@@ -437,7 +448,9 @@ for my $drive ( @DRIVES )
         my $attributes = [ keys %$drive_smart ];
         if ( @ATTRIBUTES )
         {
-            @$attributes = grep{ $_ if $_ ~~ @ATTRIBUTES } @$attributes;
+            @$attributes =
+                grep{ $_ if $_ ~~ @ATTRIBUTES }
+                @$attributes;
             push @$attributes, 'ATTRIBUTE_NAME';
         }
         for my $attr ( sort @$attributes )
@@ -445,12 +458,18 @@ for my $drive ( @DRIVES )
             my %attr_data = %{ $drive_smart->{ $attr } };
             # order of smart-data colums
             my $columns = [ qw( id flag value worst thresh type updated fail raw_value ) ];
-            my $values  = [ grep{ defined } @attr_data{ @$columns } ];
+            my $values  = [
+                grep{ defined }
+                @attr_data{ @$columns }
+            ];
             push @smart_log, join( $SEP_OUTPUT, $drive, $attr, @$values ) . "\n";
         }
         if ( $LOG_PATH )
         {
-            &log_write( "$LOG_PATH/$1.log", \@smart_log );
+            &log_write(
+                "$LOG_PATH/$1.log",
+                \@smart_log,
+            );
         }
         else
         {
