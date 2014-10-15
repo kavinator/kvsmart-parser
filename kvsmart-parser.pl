@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # kvsmart-parser -- simple S.M.A.R.T. parser with the account of the hard disk vendors
-# Copyright (c) 2012 Vladimir Petukhov (kavinator@gmail.com)
+# Copyright (c) 2012-2014 Vladimir Petukhov (kavinator@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ my @DRIVES     = ();
 my @VENDORS    = ();
 my @ATTRIBUTES = ();
 
-my $COPYRIGHT = "kvsmart-parser $VERSION Copyright (c) 2012 Vladimir Petukhov (kavinator\@gmail.com)";
+my $COPYRIGHT = "kvsmart-parser $VERSION Copyright (c) 2012-2014 Vladimir Petukhov (kavinator\@gmail.com)";
 
 GetOptions(
     'drives|drv=s{,}'    => \@DRIVES,
