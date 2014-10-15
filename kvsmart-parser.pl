@@ -32,7 +32,8 @@ use File::Path;
 use Getopt::Long;
 
 my $VERSION    = '0.5.4';
-my $SMARTCTL   = '/usr/sbin/smartctl';
+
+my $SMARTCTL_BIN   = '/usr/sbin/smartctl';
 my $FORMAT     = 'old'; # old | brief
 my $SEP_OUTPUT = "\t";
 my $LOG_PATH   = '';
@@ -87,7 +88,7 @@ if ( $ENV{ USER } ne 'root' )
     );
 }
 
-unless ( -x $SMARTCTL )
+unless ( -x $SMARTCTL_BIN )
 {
     print "\nERROR: cannot find smartctl\n\n";
     exit 0;
@@ -443,7 +444,7 @@ run_smart( $drive_name )
 sub run_smart
 {
     my $drive = shift;
-    my $cmd = "$SMARTCTL --attributes $drive --format=$FORMAT";
+    my $cmd = "$SMARTCTL_BIN --attributes $drive --format=$FORMAT";
     print_debug( "run smartctl for $drive" );
     my $smart_result = [ `$cmd` ];
     my $found_start_tag;
