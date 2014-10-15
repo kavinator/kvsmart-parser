@@ -48,6 +48,96 @@ GetOptions(
     'help|h'             => \$HELP,
 ) or die "Incorrect usage!\n";
 
+################################################################################
+# MAIN PART
+################################################################################
+
+if ( $HELP or $#ARGV == 0 )
+{
+    &print_usage();
+    exit;
+}
+elsif ( $VER )
+{
+    print "$COPYRIGHT\n";
+    exit;
+}
+
+if ( $ENV{ USER } ne 'root' )
+{
+    &error_print(
+        'root privileges are required to detect vendor or run smartctl!',
+        'warning'
+    );
+}
+
+unless ( -x $SMARTCTL )
+{
+    print "\nERROR: cannot find smartctl\n\n";
+    exit;
+}
+
+unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' )
+{
+    &error_print( "invalid smart output format: $FORMAT" );
+    exit;
+}
+
+&debug_print( "Output format: $FORMAT" );
+
+@DRIVES = &vendor_check(
+    &drives_check( \@DRIVES ),
+    \@VENDORS
+);
+
+@ATTRIBUTES = &smart_attr_check( \@ATTRIBUTES )
+    if @ATTRIBUTES;
+
+for my $drive ( @DRIVES )
+{
+    &debug_print( "use $drive" );
+    my $drive_smart = &run_smart( $drive );
+    if ( %$drive_smart )
+    {
+        $drive =~ m{/dev/(\w+)};
+        my @smart_log  = ();
+        my $attributes = [ keys %$drive_smart ];
+        if ( @ATTRIBUTES )
+        {
+            @$attributes =
+                grep{ $_ if $_ ~~ @ATTRIBUTES }
+                @$attributes;
+            push @$attributes, 'ATTRIBUTE_NAME';
+        }
+        for my $attr ( sort @$attributes )
+        {
+            my %attr_data = %{ $drive_smart->{ $attr } };
+            # order of smart-data colums
+            my $columns = [ qw( id flag value worst thresh type updated fail raw_value ) ];
+            my $values  = [
+                grep{ defined }
+                @attr_data{ @$columns }
+            ];
+            push @smart_log, join( $SEP_OUTPUT, $drive, $attr, @$values ) . "\n";
+        }
+        if ( $LOG_PATH )
+        {
+            &log_write(
+                "$LOG_PATH/$1.log",
+                \@smart_log,
+            );
+        }
+        else
+        {
+            print @smart_log;
+        }
+    }
+}
+
+################################################################################
+# FUNCTIONS
+################################################################################
+
 sub print_usage()
 {
     print "$COPYRIGHT
@@ -396,90 +486,4 @@ sub run_smart
         }
     }
     return \%smart_data;
-}
-
-########################################################################
-# Main part
-########################################################################
-
-if ( $HELP or $#ARGV == 0 )
-{
-    &print_usage();
-    exit;
-}
-elsif ( $VER )
-{
-    print "$COPYRIGHT\n";
-    exit;
-}
-
-if ( $ENV{ USER } ne 'root' )
-{
-    &error_print(
-        'root privileges are required to detect vendor or run smartctl!',
-        'warning'
-    );
-}
-
-unless ( -x $SMARTCTL )
-{
-    print "\nERROR: cannot find smartctl\n\n";
-    exit;
-}
-
-unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' )
-{
-    &error_print( "invalid smart output format: $FORMAT" );
-    exit;
-}
-
-&debug_print( "Output format: $FORMAT" );
-
-@DRIVES = &vendor_check(
-    &drives_check( \@DRIVES ),
-    \@VENDORS
-);
-
-@ATTRIBUTES = &smart_attr_check( \@ATTRIBUTES )
-    if @ATTRIBUTES;
-
-for my $drive ( @DRIVES )
-{
-    &debug_print( "use $drive" );
-    my $drive_smart = &run_smart( $drive );
-    if ( %$drive_smart )
-    {
-        $drive =~ m{/dev/(\w+)};
-        my @smart_log  = ();
-        my $attributes = [ keys %$drive_smart ];
-        if ( @ATTRIBUTES )
-        {
-            @$attributes =
-                grep{ $_ if $_ ~~ @ATTRIBUTES }
-                @$attributes;
-            push @$attributes, 'ATTRIBUTE_NAME';
-        }
-        for my $attr ( sort @$attributes )
-        {
-            my %attr_data = %{ $drive_smart->{ $attr } };
-            # order of smart-data colums
-            my $columns = [ qw( id flag value worst thresh type updated fail raw_value ) ];
-            my $values  = [
-                grep{ defined }
-                @attr_data{ @$columns }
-            ];
-            push @smart_log, join( $SEP_OUTPUT, $drive, $attr, @$values ) . "\n";
-        }
-        if ( $LOG_PATH )
-        {
-            &log_write(
-                "$LOG_PATH/$1.log",
-                \@smart_log,
-            );
-        }
-        else
-        {
-            print @smart_log;
-        }
-    }
 }
