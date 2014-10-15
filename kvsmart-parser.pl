@@ -174,12 +174,14 @@ sub log_write
 # split_names( @names )
 sub split_names
 {
-    return
+    my @names =
         grep{ defined }
         split(
             /[,\ ]\s*/,
             join( ',', @_ ),
         );
+
+    return @names;
 }
 
 # drives_check( @drives )
