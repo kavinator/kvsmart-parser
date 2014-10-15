@@ -65,7 +65,7 @@ elsif ( $VER )
 
 if ( $ENV{ USER } ne 'root' )
 {
-    &error_print(
+    &print_error(
         'root privileges are required to detect vendor or run smartctl!',
         'warning'
     );
@@ -79,11 +79,11 @@ unless ( -x $SMARTCTL )
 
 unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' )
 {
-    &error_print( "invalid smart output format: $FORMAT" );
+    &print_error( "invalid smart output format: $FORMAT" );
     exit;
 }
 
-&debug_print( "Output format: $FORMAT" );
+&print_debug( "Output format: $FORMAT" );
 
 @DRIVES = &vendor_check(
     &drives_check( \@DRIVES ),
@@ -95,7 +95,7 @@ unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' )
 
 for my $drive ( @DRIVES )
 {
-    &debug_print( "use $drive" );
+    &print_debug( "use $drive" );
     my $drive_smart = &run_smart( $drive );
     if ( %$drive_smart )
     {
@@ -191,8 +191,8 @@ either version 3 of the License, or (at your option) any later version.
     return;
 }
 
-# error_print( $error_message, $error_type )
-sub error_print
+# print_error( $error_message, $error_type )
+sub print_error
 {
     my $msg  = shift;
     my $type = shift || 'error';
@@ -201,7 +201,7 @@ sub error_print
     return;
 }
 
-sub debug_print
+sub print_debug
 {
     print "$_[0]\n"
         if $DEBUG;
@@ -215,10 +215,10 @@ sub file_read
     my $file_name = shift;
     my $output = [];
     open my $IN, '<', $file_name
-        or die &error_print( "Can't open file: $!" );
+        or die &print_error( "Can't open file: $!" );
         @$output = <$IN>;
     close $IN
-        or die &error_print( "Can't close file: $!" );
+        or die &print_error( "Can't close file: $!" );
     return $output;
 }
 
@@ -241,25 +241,25 @@ sub log_write
             my ( $file, $message ) = %$diag;
             if ( $file eq '' )
             {
-                &error_print( "general error: $message" );
+                &print_error( "general error: $message" );
             }
             else
             {
-                &error_print( "create $file: $message" );
+                &print_error( "create $file: $message" );
             }
         }
     }
     if ( -e $file_name )
     {
-        &debug_print( "file \"$file_name\" exist, replaced" );
+        &print_debug( "file \"$file_name\" exist, replaced" );
         unlink $file_name;
     }
-    &debug_print( "write log to \"$file_name\"");
+    &print_debug( "write log to \"$file_name\"");
     open my $OUT, '>>', $file_name
-        or die &error_print( "Can't write file: $!" );
+        or die &print_error( "Can't write file: $!" );
         print $OUT map{ $_ } @$log_data;
     close $OUT
-        or die &error_print( "Can't close file: $!" );
+        or die &print_error( "Can't close file: $!" );
     return;
 }
 
@@ -290,18 +290,18 @@ sub drives_check
     {
         if ( m{^\s*(/dev/.+)\s*?$} and -e $1 )
         {
-            &debug_print( "\"$1\" exist" );
+            &print_debug( "\"$1\" exist" );
             push @$rigth_drives, $1;
         }
         else
         {
-            &error_print(
+            &print_error(
                 "drive \"$1\" not exist",
                 "warning"
             );
         }
     }
-    &debug_print( "Detected drives: " . join( ', ', @$rigth_drives ) );
+    &print_debug( "Detected drives: " . join( ', ', @$rigth_drives ) );
     return $rigth_drives;
 }
 
@@ -318,7 +318,7 @@ sub vendor_check
     else
     {
         @$vendors = &split_names( @$vendors );
-        &debug_print( "Detected vendors: " . join( ', ', @$vendors ) );
+        &print_debug( "Detected vendors: " . join( ', ', @$vendors ) );
         my $right_drives = [];
         for my $drive ( @$drives )
         {
@@ -327,7 +327,7 @@ sub vendor_check
             if ( -r "$model_path" )
             {
                 my $vendor = ( split /\s+/, @{ &file_read( $model_path ) }[0] )[0];
-                &debug_print( "drive \"$drive\" vendor \"$vendor\"" );
+                &print_debug( "drive \"$drive\" vendor \"$vendor\"" );
                 push @$right_drives, $drive
                     if $vendor ~~ @$vendors;
             }
@@ -343,7 +343,7 @@ sub smart_attr_check
     if ( @$attributes )
     {
         $attributes = [ &split_names( @$attributes ) ];
-        &debug_print( "Detected SMART attributes: " . join( ', ', @$attributes ) );
+        &print_debug( "Detected SMART attributes: " . join( ', ', @$attributes ) );
     }
     return @$attributes;
 }
@@ -371,7 +371,7 @@ sub run_smart
 {
     my $drive = shift;
     my $cmd = "$SMARTCTL --attributes $drive --format=$FORMAT";
-    &debug_print( "run smartctl for $drive" );
+    &print_debug( "run smartctl for $drive" );
     my $smart_result = [ `$cmd` ];
     my $found_start_tag;
     my $errmsg = "";
@@ -420,7 +420,7 @@ sub run_smart
     }
     if ( $errmsg )
     {
-        &error_print( $errmsg );
+        &print_error( $errmsg );
         exit;
     }
     my %smart_data;
