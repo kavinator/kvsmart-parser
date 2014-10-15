@@ -34,6 +34,8 @@ my @DRIVES     = ();
 my @VENDORS    = ();
 my @ATTRIBUTES = ();
 
+my $COPYRIGHT = "kvsmart-parser $VERSION Copyright (c) 2012 Vladimir Petukhov (kavinator\@gmail.com)";
+
 GetOptions(
     'drives|drv=s{,}'    => \@DRIVES,
     'vendors|ven=s{,}'   => \@VENDORS,
@@ -47,7 +49,7 @@ GetOptions(
 ) or die "Incorrect usage!\n";
 
 sub print_usage() {
-    print "kvsmart-parser $VERSION Copyright (c) 2012 Vladimir Petukhov (kavinator\@gmail.com)
+    print "$COPYRIGHT
 Usage: $0 [ OPTIONS ] [ VENDORS ] [ LOGPATH ] ... -drv='DRIVES'
 
 OPTIONS:
@@ -345,7 +347,7 @@ if ( $HELP or $#ARGV == 0 ) {
     &print_usage();
     exit;
 } elsif ( $VER ) {
-    print "kvsmart-parser $VERSION Copyright (c) 2012 Vladimir Petukhov (kavinator\@gmail.com)\n";
+    print "$COPYRIGHT\n";
     exit;
 }
 
