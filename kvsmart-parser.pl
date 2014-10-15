@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-# kvsmart-parser -- simple S.M.A.R.T. parser with the account of the hard disk vendors
 # Copyright (c) 2012-2014 Vladimir Petukhov (kavinator@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,6 +13,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+=head1 NAME
+
+kvsmart-parser.pl
+
+=head1 SYNOPSIS
+
+kvsmart-parser -- simple S.M.A.R.T. parser with the account of the hard disk vendors
+
+=cut
 
 use strict;
 use warnings;
@@ -33,6 +42,12 @@ my $DEBUG      = 0;
 my @DRIVES     = ();
 my @VENDORS    = ();
 my @ATTRIBUTES = ();
+
+=head1 DESCRIPTIONS
+
+...
+
+=cut
 
 my $COPYRIGHT = "kvsmart-parser $VERSION Copyright (c) 2012-2014 Vladimir Petukhov (kavinator\@gmail.com)";
 
@@ -138,6 +153,16 @@ for my $drive ( @DRIVES )
 # FUNCTIONS
 ################################################################################
 
+=head1 FUNCTIONS
+
+=over 1
+
+=item print_usage()
+
+...
+
+=cut
+
 sub print_usage()
 {
     print "$COPYRIGHT
@@ -191,7 +216,12 @@ either version 3 of the License, or (at your option) any later version.
     return;
 }
 
-# print_error( $error_message, $error_type )
+=item print_error()
+
+print_error( $error_message, $error_type )
+
+=cut
+
 sub print_error
 {
     my $msg  = shift;
@@ -201,6 +231,12 @@ sub print_error
     return;
 }
 
+=item print_debug()
+
+...
+
+=cut
+
 sub print_debug
 {
     print "$_[0]\n"
@@ -208,8 +244,13 @@ sub print_debug
     return;
 }
 
-# file_read( $file_name )
-# @return: ref to array
+=item file_read()
+
+file_read( $file_name )
+@return: ref to array
+
+=cut
+
 sub file_read
 {
     my $file_name = shift;
@@ -222,7 +263,12 @@ sub file_read
     return $output;
 }
 
-# log_write( $file_name, @array )
+=item log_write()
+
+log_write( $file_name, @array )
+
+=cut
+
 sub log_write
 {
     my $file_name = shift;
@@ -263,7 +309,13 @@ sub log_write
     return;
 }
 
-# split_names( @names )
+=item split_names()
+
+split_names( @names )
+@return array
+
+=cut
+
 sub split_names
 {
     my @names =
@@ -276,8 +328,13 @@ sub split_names
     return @names;
 }
 
-# drives_check( @drives )
-# @return ref to array
+=item drives_check()
+
+drives_check( @drives )
+@return ref to array
+
+=cut
+
 sub drives_check
 {
     my $drives = shift;
@@ -305,8 +362,13 @@ sub drives_check
     return $rigth_drives;
 }
 
-# vendor_check( @drives )
-# @return: ref to array
+=item vendor_check()
+
+vendor_check( @drives )
+@return: ref to array
+
+=cut
+
 sub vendor_check
 {
     my $drives  = shift;
@@ -336,7 +398,12 @@ sub vendor_check
     }
 }
 
-# smart_attr_check( @attributes )
+=item smart_attr_check()
+
+smart_attr_check( @attributes )
+
+=cut
+
 sub smart_attr_check
 {
     my $attributes = shift;
@@ -348,25 +415,30 @@ sub smart_attr_check
     return @$attributes;
 }
 
-# smart_data => (
-#     'Spin_Up_Time' => (
-#         raw_value => 3300,
-#         type => 'Pre-fail'
-#         thresh => 021,
-#         value => '234',
-#         worst => '233',
-#     ),
-#     'Temperature_Celsius' => (
-#         raw_value => 34,
-#         type => 'Old_age'
-#         thresh => 000,
-#         value => '116',
-#         worst => '105',
-#     ),
-# )
-#
-# run_smart( $drive_name )
-# @return: ref to hash
+=item run_smart()
+
+smart_data => (
+    'Spin_Up_Time' => (
+        raw_value => 3300,
+        type => 'Pre-fail'
+        thresh => 021,
+        value => '234',
+        worst => '233',
+    ),
+    'Temperature_Celsius' => (
+        raw_value => 34,
+        type => 'Old_age'
+        thresh => 000,
+        value => '116',
+        worst => '105',
+    ),
+)
+
+run_smart( $drive_name )
+@return: ref to hash
+
+=cut
+
 sub run_smart
 {
     my $drive = shift;
