@@ -36,12 +36,13 @@ my $SMARTCTL   = '/usr/sbin/smartctl';
 my $FORMAT     = 'old'; # old | brief
 my $SEP_OUTPUT = "\t";
 my $LOG_PATH   = '';
-my $VER        = 0;
-my $HELP       = 0;
-my $DEBUG      = 0;
-my @DRIVES     = ();
-my @VENDORS    = ();
-my @ATTRIBUTES = ();
+
+my $VER;
+my $HELP;
+my $DEBUG;
+my @DRIVES;
+my @VENDORS;
+my @ATTRIBUTES;
 
 =head1 DESCRIPTIONS
 
