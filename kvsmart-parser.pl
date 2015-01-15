@@ -34,7 +34,6 @@ use Getopt::Long;
 my $VERSION = '0.5.4';
 
 my $SMARTCTL_BIN = '/usr/sbin/smartctl';
-my $FORMAT       = 'old'; # old | brief
 my $SEP_OUTPUT   = "\t";
 my $LOG_PATH     = '';
 
@@ -59,7 +58,6 @@ GetOptions(
     'drives|drv=s{,}'    => \@DRIVES,
     'vendors|ven=s{,}'   => \@VENDORS,
     'smart-attr|sa=s{,}' => \@ATTRIBUTES,
-    'format|f=s'         => \$FORMAT,
     'sep-output|so=s'    => \$SEP_OUTPUT,
     'log-path|lp=s'      => \$LOG_PATH,
     'debug|d'            => \$DEBUG,
@@ -95,14 +93,6 @@ unless ( -x $SMARTCTL_BIN )
     print "\nERROR: cannot find smartctl\n\n";
     exit 0;
 }
-
-unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' )
-{
-    print_error( "invalid smart output format: $FORMAT" );
-    exit 0;
-}
-
-print_debug_if_required( "Output format: $FORMAT" );
 
 @DRIVES = vendor_check(
     [ drives_check( @DRIVES ) ],
@@ -184,11 +174,6 @@ OPTIONS:
     -sa, --smart-attr='attr1 [, attr2 [...] ]'
         $0 --drives='/dev/hda' --smart-attr='Spin_Up_Time'
         $0 --drives='/dev/hda' --smart-attr='Spin_Up_Time, Temperature_Celsius'
-
-    -f, --format='FORMAT'
-        set output format for attributes to one of: old, brief
-        default: old
-        $0 --drives='/dev/hda' --format='brief'
 
     -so, --sep-output='SEPARATOR'
         separator of output in a rows
@@ -448,7 +433,7 @@ run_smart( $drive_name )
 sub run_smart
 {
     my $drive = shift;
-    my $cmd = "$SMARTCTL_BIN --attributes $drive --format=$FORMAT";
+    my $cmd = "$SMARTCTL_BIN --attributes $drive";
     print_debug_if_required( "run smartctl for $drive" );
     my $smart_result = [ `$cmd` ];
     my $found_start_tag;
@@ -512,6 +497,8 @@ sub run_smart
         if ( /^\s*(?:\d{1,3}|ID#)\s+.*?$/ )
         {
             chomp;
+
+            # TODO: remove brief-format parsing
 
             # Example of smartctl output for ATA-drive (old-format)
             # ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
