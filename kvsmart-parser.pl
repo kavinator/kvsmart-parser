@@ -31,23 +31,27 @@ use 5.010;
 use File::Path;
 use Getopt::Long;
 
-my $VERSION    = '0.5.4';
-my $SMARTCTL   = '/usr/sbin/smartctl';
-my $FORMAT     = 'old'; # old | brief
-my $SEP_OUTPUT = "\t";
-my $LOG_PATH   = '';
-my $VER        = 0;
-my $HELP       = 0;
-my $DEBUG      = 0;
-my @DRIVES     = ();
-my @VENDORS    = ();
-my @ATTRIBUTES = ();
+my $VERSION = '0.5.4';
+
+my $SMARTCTL_BIN = '/usr/sbin/smartctl';
+my $FORMAT       = 'old'; # old | brief
+my $SEP_OUTPUT   = "\t";
+my $LOG_PATH     = '';
+
+my $VER;
+my $HELP;
+my $DEBUG;
+my @DRIVES;
+my @VENDORS;
+my @ATTRIBUTES;
 
 =head1 DESCRIPTIONS
 
 ...
 
 =cut
+
+# TODO: remove smartmatch: Smartmatch is experimental now
 
 my $COPYRIGHT = "kvsmart-parser $VERSION Copyright (c) 2012-2014 Vladimir Petukhov (kavinator\@gmail.com)";
 
@@ -70,12 +74,12 @@ GetOptions(
 if ( $HELP or $#ARGV == 0 )
 {
     print_usage();
-    exit;
+    exit 0;
 }
 elsif ( $VER )
 {
     print "$COPYRIGHT\n";
-    exit;
+    exit 0;
 }
 
 if ( $ENV{ USER } ne 'root' )
@@ -86,22 +90,22 @@ if ( $ENV{ USER } ne 'root' )
     );
 }
 
-unless ( -x $SMARTCTL )
+unless ( -x $SMARTCTL_BIN )
 {
     print "\nERROR: cannot find smartctl\n\n";
-    exit;
+    exit 0;
 }
 
 unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' )
 {
     print_error( "invalid smart output format: $FORMAT" );
-    exit;
+    exit 0;
 }
 
-print_debug( "Output format: $FORMAT" );
+print_debug_if_required( "Output format: $FORMAT" );
 
 @DRIVES = vendor_check(
-    drives_check( \@DRIVES ),
+    [ drives_check( @DRIVES ) ],
     \@VENDORS
 );
 
@@ -110,7 +114,7 @@ print_debug( "Output format: $FORMAT" );
 
 for my $drive ( @DRIVES )
 {
-    print_debug( "use $drive" );
+    print_debug_if_required( "use $drive" );
     my $drive_smart = run_smart( $drive );
     if ( %$drive_smart )
     {
@@ -163,7 +167,7 @@ for my $drive ( @DRIVES )
 
 =cut
 
-sub print_usage()
+sub print_usage
 {
     print "$COPYRIGHT
 Usage: $0 [ OPTIONS ] [ VENDORS ] [ LOGPATH ] ... -drv='DRIVES'
@@ -231,13 +235,13 @@ sub print_error
     return;
 }
 
-=item print_debug()
+=item print_debug_if_required()
 
 ...
 
 =cut
 
-sub print_debug
+sub print_debug_if_required
 {
     print "$_[0]\n"
         if $DEBUG;
@@ -297,10 +301,10 @@ sub log_write
     }
     if ( -e $file_name )
     {
-        print_debug( "file \"$file_name\" exist, replaced" );
+        print_debug_if_required( "file \"$file_name\" exist, replaced" );
         unlink $file_name;
     }
-    print_debug( "write log to \"$file_name\"");
+    print_debug_if_required( "write log to \"$file_name\"");
     open my $OUT, '>>', $file_name
         or die print_error( "Can't write file: $!" );
         print $OUT map{ $_ } @$log_data;
@@ -331,35 +335,37 @@ sub split_names
 =item drives_check()
 
 drives_check( @drives )
-@return ref to array
+@return array of checked drives
 
 =cut
 
 sub drives_check
 {
-    my $drives = shift;
-    unless ( $drives )
+    my @drives = @_;
+    my @rigth_drives;
+
+    foreach my $drive_name ( split_names( @drives ) )
     {
-        return [];
-    }
-    my $rigth_drives = [];
-    for ( split_names( @$drives ) )
-    {
-        if ( m{^\s*(/dev/.+)\s*?$} and -e $1 )
+        my ( $drive_file ) = $drive_name =~ m{^\s*(/dev/.+)\s*?$};
+        if ( -e $drive_file )
         {
-            print_debug( "\"$1\" exist" );
-            push @$rigth_drives, $1;
+            print_debug_if_required( "\"$drive_file\" exist" );
+            push @rigth_drives, $drive_file;
         }
         else
         {
             print_error(
-                "drive \"$1\" not exist",
-                "warning"
+                "drive \"$drive_file\" not exist",
+                "warning",
             );
         }
     }
-    print_debug( "Detected drives: " . join( ', ', @$rigth_drives ) );
-    return $rigth_drives;
+    print_debug_if_required(
+        "Detected drives: ",
+        join( ', ', @rigth_drives ),
+    );
+
+    return @rigth_drives;
 }
 
 =item vendor_check()
@@ -380,7 +386,7 @@ sub vendor_check
     else
     {
         @$vendors = split_names( @$vendors );
-        print_debug( "Detected vendors: " . join( ', ', @$vendors ) );
+        print_debug_if_required( "Detected vendors: " . join( ', ', @$vendors ) );
         my $right_drives = [];
         for my $drive ( @$drives )
         {
@@ -389,7 +395,7 @@ sub vendor_check
             if ( -r "$model_path" )
             {
                 my $vendor = ( split /\s+/, @{ file_read( $model_path ) }[0] )[0];
-                print_debug( "drive \"$drive\" vendor \"$vendor\"" );
+                print_debug_if_required( "drive \"$drive\" vendor \"$vendor\"" );
                 push @$right_drives, $drive
                     if $vendor ~~ @$vendors;
             }
@@ -410,7 +416,7 @@ sub smart_attr_check
     if ( @$attributes )
     {
         $attributes = [ split_names( @$attributes ) ];
-        print_debug( "Detected SMART attributes: " . join( ', ', @$attributes ) );
+        print_debug_if_required( "Detected SMART attributes: " . join( ', ', @$attributes ) );
     }
     return @$attributes;
 }
@@ -442,8 +448,8 @@ run_smart( $drive_name )
 sub run_smart
 {
     my $drive = shift;
-    my $cmd = "$SMARTCTL --attributes $drive --format=$FORMAT";
-    print_debug( "run smartctl for $drive" );
+    my $cmd = "$SMARTCTL_BIN --attributes $drive --format=$FORMAT";
+    print_debug_if_required( "run smartctl for $drive" );
     my $smart_result = [ `$cmd` ];
     my $found_start_tag;
     my $errmsg = "";
@@ -463,6 +469,11 @@ sub run_smart
         if ( /command not found/ )
         {
             $errmsg = "command error: $_";
+            last;
+        }
+        if ( /SMART support is: Unavailable/ )
+        {
+            $errmsg = $_;
             last;
         }
         if ( /open device: .* failed/ )
