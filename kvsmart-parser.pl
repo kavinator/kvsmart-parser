@@ -103,7 +103,7 @@ unless ( $FORMAT eq 'old' or $FORMAT eq 'brief' )
 print_debug_if_required( "Output format: $FORMAT" );
 
 @DRIVES = vendor_check(
-    drives_check( \@DRIVES ),
+    [ drives_check( @DRIVES ) ],
     \@VENDORS
 );
 
@@ -333,35 +333,37 @@ sub split_names
 =item drives_check()
 
 drives_check( @drives )
-@return ref to array
+@return array of checked drives
 
 =cut
 
 sub drives_check
 {
-    my $drives = shift;
-    unless ( $drives )
+    my @drives = @_;
+    my @rigth_drives;
+
+    foreach my $drive_name ( split_names( @drives ) )
     {
-        return [];
-    }
-    my $rigth_drives = [];
-    for ( split_names( @$drives ) )
-    {
-        if ( m{^\s*(/dev/.+)\s*?$} and -e $1 )
+        my ( $drive_file ) = $drive_name =~ m{^\s*(/dev/.+)\s*?$};
+        if ( -e $drive_file )
         {
-            print_debug_if_required( "\"$1\" exist" );
-            push @$rigth_drives, $1;
+            print_debug_if_required( "\"$drive_file\" exist" );
+            push @rigth_drives, $drive_file;
         }
         else
         {
             print_error(
-                "drive \"$1\" not exist",
-                "warning"
+                "drive \"$drive_file\" not exist",
+                "warning",
             );
         }
     }
-    print_debug_if_required( "Detected drives: " . join( ', ', @$rigth_drives ) );
-    return $rigth_drives;
+    print_debug_if_required(
+        "Detected drives: ",
+        join( ', ', @rigth_drives ),
+    );
+
+    return @rigth_drives;
 }
 
 =item vendor_check()
