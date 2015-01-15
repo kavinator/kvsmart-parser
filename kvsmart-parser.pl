@@ -523,15 +523,15 @@ sub run_smart
                 (?<id>\d{1,3}|ID\#)\s+            # number  or 'ID#'
                 (?<attr_name>[\w\-]+)\s+          # wo-rd
                 (?<flag>[\w\-]+)\s+               # wo-rd   or 'FLAG' or 'FLAGS'
-                (?<value>\d+|VALUE)\s+            # number  or 'VALUE'
-                (?<worst>\d+|WORST)\s+            # number  or 'WORST'
+                (?<value>[\d\-]+|VALUE)\s+        # num-ber or 'VALUE'
+                (?<worst>[\d\-]+|WORST)\s+        # num-ber or 'WORST'
                 (?<thresh>[\d\-]+|THRESH)\s+      # num-ber or 'THRESH'
                 (?<old_format>
                     (?<type>[\w\-]+)\s+           # wo-rd   or 'TYPE'
-                    (?<updated>\w+)\s+            # word    or 'UPDATED'
+                    (?<updated>[\w\-]+)\s+        # wo-rd   or 'UPDATED'
                 )?
                 (?<fail>[\w\-]+)\s+               # wo-rd   or 'WHEN_FAILED' or 'FAIL'
-                (?<raw_value>\d+|RAW_VALUE)       # number  or 'RAW_VALUE'
+                (?<raw_value>[\d\-]+|RAW_VALUE)   # num-ber or 'RAW_VALUE'
                 \s*$
             )x;
 
