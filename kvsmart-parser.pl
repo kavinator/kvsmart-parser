@@ -498,6 +498,8 @@ sub run_smart
         {
             chomp;
 
+            # TODO: remove brief-format parsing
+
             # Example of smartctl output for ATA-drive (old-format)
             # ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
             #   9 Power_On_Hours          0x0032   096   096   000    Old_age   Always       -       3404
