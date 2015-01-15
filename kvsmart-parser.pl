@@ -469,6 +469,11 @@ sub run_smart
             $errmsg = "command error: $_";
             last;
         }
+        if ( /SMART support is: Unavailable/ )
+        {
+            $errmsg = $_;
+            last;
+        }
         if ( /open device: .* failed/ )
         {
             $errmsg = $_;
