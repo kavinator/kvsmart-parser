@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# Copyright (c) 2012-2014 Vladimir Petukhov (kavinator@gmail.com)
+# Copyright (c) 2012-2015 Vladimir Petukhov (kavinator@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ my @ATTRIBUTES;
 
 # TODO: remove smartmatch: Smartmatch is experimental now
 
-my $COPYRIGHT = "kvsmart-parser $VERSION Copyright (c) 2012-2014 Vladimir Petukhov (kavinator\@gmail.com)";
+my $COPYRIGHT = "kvsmart-parser $VERSION Copyright (c) 2012-2015 Vladimir Petukhov (kavinator\@gmail.com)";
 
 GetOptions(
     'drives|drv=s{,}'    => \@DRIVES,
