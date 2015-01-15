@@ -375,7 +375,7 @@ sub vendor_check
         my $right_drives = [];
         for my $drive ( @$drives )
         {
-            $drive =~ m{/dev/(\w+)};
+            $drive =~ m{/dev/([a-zA-Z0-9_]+)};
             my $model_path = "/sys/block/$1/device/model";
             if ( -r "$model_path" )
             {
