@@ -51,6 +51,8 @@ my @ATTRIBUTES;
 
 =cut
 
+# TODO: remove smartmatch: Smartmatch is experimental now
+
 my $COPYRIGHT = "kvsmart-parser $VERSION Copyright (c) 2012-2014 Vladimir Petukhov (kavinator\@gmail.com)";
 
 GetOptions(
