@@ -520,18 +520,18 @@ sub run_smart
 
             m(
                 ^\s*?
-                (?<id>\d{1,3}|ID\#)\s+            # number  or 'ID#'
-                (?<attr_name>[\w\-]+)\s+          # wo-rd
-                (?<flag>[\w\-]+)\s+               # wo-rd   or 'FLAG' or 'FLAGS'
-                (?<value>[\d\-]+|VALUE)\s+        # num-ber or 'VALUE'
-                (?<worst>[\d\-]+|WORST)\s+        # num-ber or 'WORST'
-                (?<thresh>[\d\-]+|THRESH)\s+      # num-ber or 'THRESH'
+                (?<id>[0-9]{1,3}|ID\#)\s+          # number  or 'ID#'
+                (?<attr_name>[a-zA-Z0-9_-]+)\s+    # wo-rd_
+                (?<flag>[a-zA-Z0-9_-]+)\s+         # wo-rd_  or 'FLAG' or 'FLAGS'
+                (?<value>[0-9-]+|VALUE)\s+         # num-ber or 'VALUE'
+                (?<worst>[0-9-]+|WORST)\s+         # num-ber or 'WORST'
+                (?<thresh>[0-9-]+|THRESH)\s+       # num-ber or 'THRESH'
                 (?<old_format>
-                    (?<type>[\w\-]+)\s+           # wo-rd   or 'TYPE'
-                    (?<updated>[\w\-]+)\s+        # wo-rd   or 'UPDATED'
+                    (?<type>[a-zA-Z0-9_-]+)\s+     # wo-rd_  or 'TYPE'
+                    (?<updated>[a-zA-Z0-9_-]+)\s+  # wo-rd_  or 'UPDATED'
                 )?
-                (?<fail>[\w\-]+)\s+               # wo-rd   or 'WHEN_FAILED' or 'FAIL'
-                (?<raw_value>[\d\-]+|RAW_VALUE)   # num-ber or 'RAW_VALUE'
+                (?<fail>[a-zA-Z0-9_-]+)\s+         # wo-rd_  or 'WHEN_FAILED' or 'FAIL'
+                (?<raw_value>[0-9-]+|RAW_VALUE)    # num-ber or 'RAW_VALUE'
                 \s*$
             )x;
 
