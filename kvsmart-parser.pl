@@ -31,7 +31,7 @@ use 5.010;
 use File::Path;
 use Getopt::Long;
 
-my $VERSION = '0.5.4';
+my $VERSION = '0.5.5';
 
 my $SMARTCTL_BIN = '/usr/sbin/smartctl';
 my $SEP_OUTPUT   = "\t";
